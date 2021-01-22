@@ -43,7 +43,7 @@ func main() {
 	if base.Coverage() == head.Coverage() {
 		title = "Coverage unchanged."
 	} else if base.Coverage() > head.Coverage() {
-		title = fmt.Sprintf("Coverage decreased by %6.1f%%. :bell: Shame :bell", (base.Coverage()-head.Coverage())*100)
+		title = fmt.Sprintf("Coverage decreased by %6.1f%%. :bell: Shame :bell:", (base.Coverage()-head.Coverage())*100)
 	} else {
 		title = fmt.Sprintf("Coverage increased by %6.1f%%. Keep it up :medal_sports:", (head.Coverage()-base.Coverage())*100)
 	}
