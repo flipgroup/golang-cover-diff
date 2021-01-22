@@ -26,26 +26,26 @@ func main() {
 	}
 
 	var buf bytes.Buffer
-	buf.WriteString(fmt.Sprintf("%-82s %7s %7s %8s\n", "package name", "before", "after", "delta"))
+	buf.WriteString(fmt.Sprintf("%-84s %7s %7s %8s\n", "package name", "before", "after", "delta"))
 	for _, pkg := range getAllPackages(base, head) {
 		baseCov := base.Packages[pkg].Coverage()
 		headCov := head.Packages[pkg].Coverage()
 		if baseCov == headCov {
 			continue
 		}
-		buf.WriteString(fmt.Sprintf("%-82s %7s %7s %8s\n", pkg, coverageDescription(baseCov), coverageDescription(headCov), diffDescription(baseCov, headCov)))
+		buf.WriteString(fmt.Sprintf("%-84s %7s %7s %8s\n", pkg, coverageDescription(baseCov), coverageDescription(headCov), diffDescription(baseCov, headCov)))
 	}
-	buf.WriteString(fmt.Sprintf("%82s %7s %7s %8s\n", "net change:", coverageDescription(base.Coverage()), coverageDescription(head.Coverage()), diffDescription(base.Coverage(), head.Coverage())))
+	buf.WriteString(fmt.Sprintf("%84s %7s %7s %8s\n", "total:", coverageDescription(base.Coverage()), coverageDescription(head.Coverage()), diffDescription(base.Coverage(), head.Coverage())))
 
 	fmt.Println(buf.String())
 
 	var title string
 	if base.Coverage() == head.Coverage() {
-		title = "No change in coverage."
+		title = "Coverage unchanged."
 	} else if base.Coverage() > head.Coverage() {
-		title = fmt.Sprint("Coverage decreased by %6.1%%. :bell: Shame :bell.", base.Coverage()-head.Coverage())
+		title = fmt.Sprintf("Coverage decreased by %6.1%%. :bell: Shame :bell", base.Coverage()-head.Coverage())
 	} else {
-		title = fmt.Sprint("Coverage increased by %6.1%%. Keep it up :medal_sports:.", head.Coverage()-base.Coverage())
+		title = fmt.Sprintf("Coverage increased by %6.1%%. Keep it up :medal_sports:", head.Coverage()-base.Coverage())
 	}
 
 	createOrUpdateComment(context.Background(), title, buf.String())
