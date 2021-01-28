@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io/ioutil"
 	"math"
 	"os"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -26,12 +28,14 @@ func main() {
 		panic(err)
 	}
 
+	rootName := getModulePackageName()
+
 	var buf bytes.Buffer
 	buf.WriteString(fmt.Sprintf("%-84s %7s %7s %8s\n", "package name", "before", "after", "delta"))
 	for _, pkg := range getAllPackages(base, head) {
 		baseCov := base.Packages[pkg].Coverage()
 		headCov := head.Packages[pkg].Coverage()
-		buf.WriteString(fmt.Sprintf("%-84s %7s %7s %8s\n", pkg, coverageDescription(baseCov), coverageDescription(headCov), diffDescription(baseCov, headCov)))
+		buf.WriteString(fmt.Sprintf("%-84s %7s %7s %8s\n", relativePackage(pkg, rootName), coverageDescription(baseCov), coverageDescription(headCov), diffDescription(baseCov, headCov)))
 	}
 	buf.WriteString(fmt.Sprintf("%84s %7s %7s %8s\n", "total:", coverageDescription(base.Coverage()), coverageDescription(head.Coverage()), diffDescription(base.Coverage(), head.Coverage())))
 
@@ -136,6 +140,24 @@ func diffDescription(base float64, head float64) string {
 
 	return fmt.Sprintf("%+6.1f%%", (head-base)*100)
 }
+
+func relativePackage(pkg string, root string) string {
+	if strings.HasPrefix(pkg, root) {
+		return "./" + strings.TrimPrefix(pkg, root)
+	}
+	return pkg
+}
+
+func getModulePackageName() string {
+	f, err := ioutil.ReadFile("go.mod")
+	if err != nil {
+		return ""
+	}
+	// found it, stop searching
+	return string(modregex.FindSubmatch(f)[1]) + "/"
+}
+
+var modregex = regexp.MustCompile(`module ([^\s]*)`)
 
 func getAllPackages(profiles ...*CoverProfile) []string {
 	set := map[string]struct{}{}
