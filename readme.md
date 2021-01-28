@@ -3,8 +3,8 @@
 This tool will compares two coverprofiles produced by go test and reports the deltas to github.
 
 Example github actions workflow to integrate:
-```
-name: Cover
+```yaml
+name: Coverage report
 
 on:
   pull_request:
@@ -22,19 +22,33 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.base.ref }}
+      - name: Cache base coverage data
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-coverage
+        with:
+          path: base.profile
+          key: ${{ hashFiles('**/*.go') }}
       - name: Extract base coverage
-        run: make setup-test && go test -cover -coverprofile=base.profile ./...
+        run: '[[ -f "base.profile" ]] || (docker-compose up -d db && go test -cover -coverprofile=base.profile ./...)'
       - name: Checkout head
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           clean: false
+      - name: Cache head coverage data
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-coverage
+        with:
+          path: head.profile
+          key: ${{ hashFiles('**/*.go') }}
       - name: Extract head coverage
-        run: go test -cover -coverprofile=head.profile ./...
+        run: '[[ -f "head.profile" ]] || (docker-compose up -d db && go test -cover -coverprofile=head.profile ./...)'
       - name: Diff coverage
         run: GO111MODULE=off go get -u github.com/flipgroup/goverdiff && goverdiff base.profile head.profile
         env:
-          GITHUB_TOKEN:  ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
           GITHUB_PULL_REQUEST_ID: ${{ github.event.number }}
 ```
 
