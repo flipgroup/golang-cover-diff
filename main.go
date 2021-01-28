@@ -30,9 +30,6 @@ func main() {
 	for _, pkg := range getAllPackages(base, head) {
 		baseCov := base.Packages[pkg].Coverage()
 		headCov := head.Packages[pkg].Coverage()
-		if baseCov == headCov {
-			continue
-		}
 		buf.WriteString(fmt.Sprintf("%-84s %7s %7s %8s\n", pkg, coverageDescription(baseCov), coverageDescription(headCov), diffDescription(baseCov, headCov)))
 	}
 	buf.WriteString(fmt.Sprintf("%84s %7s %7s %8s\n", "total:", coverageDescription(base.Coverage()), coverageDescription(head.Coverage()), diffDescription(base.Coverage(), head.Coverage())))
