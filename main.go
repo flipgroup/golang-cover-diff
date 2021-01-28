@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/go-github/v33/github"
 	"golang.org/x/oauth2"
+	"golang.org/x/tools/go/packages"
 )
 
 func main() {
@@ -123,6 +124,9 @@ func coverageDescription(coverage float64) string {
 }
 
 func diffDescription(base float64, head float64) string {
+	if math.IsNaN(base) && math.IsNaN(head) {
+		return ""
+	}
 	if math.IsNaN(base) {
 		return "new"
 	}
@@ -135,6 +139,14 @@ func diffDescription(base float64, head float64) string {
 
 func getAllPackages(profiles ...*CoverProfile) []string {
 	set := map[string]struct{}{}
+
+	pkg, err := packages.Load(&packages.Config{Mode: packages.NeedName}, "./...")
+	if err != nil {
+		panic(err)
+	}
+	for _, p := range pkg {
+		set[p.PkgPath] = struct{}{}
+	}
 
 	for _, profile := range profiles {
 		for name := range profile.Packages {
