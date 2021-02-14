@@ -1,0 +1,14 @@
+linters:
+  enable:
+    - goconst
+    - godot
+    - goimports
+    - unconvert
+    - whitespace
+
+linters-settings:
+  errcheck:
+    ignore: net/http:Write
+  goconst:
+    min-len: 2
+    min-occurrences: 2
