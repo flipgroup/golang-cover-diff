@@ -3,6 +3,7 @@
 This tool will compares two coverprofiles produced by go test and reports the deltas to github.
 
 Example github actions workflow to integrate:
+
 ```yaml
 name: Coverage report
 
@@ -23,33 +24,35 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.base.ref }}
       - name: Cache base coverage data
+        id: cache-base
         uses: actions/cache@v2
-        env:
-          cache-name: cache-coverage
         with:
           path: base.profile
           key: ${{ hashFiles('**/*.go') }}
       - name: Extract base coverage
-        run: '[[ -f "base.profile" ]] || (docker-compose up -d db && go test -cover -coverprofile=base.profile ./...)'
+        if: steps.cache-base.outputs.cache-hit != 'true'
+        run: go test -cover -coverprofile=base.profile ./...
       - name: Checkout head
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           clean: false
       - name: Cache head coverage data
+        id: cache-head
         uses: actions/cache@v2
-        env:
-          cache-name: cache-coverage
         with:
           path: head.profile
           key: ${{ hashFiles('**/*.go') }}
       - name: Extract head coverage
-        run: '[[ -f "head.profile" ]] || (docker-compose up -d db && go test -cover -coverprofile=head.profile ./...)'
+        if: steps.cache-head.outputs.cache-hit != 'true'
+        run: go test -cover -coverprofile=head.profile ./...
       - name: Diff coverage
-        run: GO111MODULE=off go get -u github.com/flipgroup/goverdiff && goverdiff base.profile head.profile
+        run: |
+          GO111MODULE=off go get -u github.com/flipgroup/goverdiff && \
+            goverdiff base.profile head.profile
         env:
-          GITHUB_TOKEN: ${{ github.token }}
           GITHUB_PULL_REQUEST_ID: ${{ github.event.number }}
+          GITHUB_TOKEN: ${{ github.token }}
 ```
 
 Note: This only works on pull_request. A push doesnt have a base ref to check against.
