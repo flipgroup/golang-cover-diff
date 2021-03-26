@@ -1,8 +1,8 @@
 ### goverdiff
 
-This tool will compares two coverprofiles produced by go test and reports the deltas to github.
+This tool will compare two cover profiles produced by `go test` and reports deltas back into a GitHub pull request.
 
-Example github actions workflow to integrate:
+Example GitHub Actions workflow to integrate:
 
 ```yaml
 name: Coverage report
@@ -11,25 +11,25 @@ on:
   pull_request:
 
 jobs:
-  cover:
+  main:
     name: Coverage
     runs-on: ubuntu-latest
     steps:
       - name: Setup Golang
         uses: actions/setup-go@v2
         with:
-          go-version: ~1.15
+          go-version: ~1.16
       - name: Checkout base
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.base.ref }}
-      - name: Cache base coverage data
+      - name: Cache base test coverage data
         id: cache-base
         uses: actions/cache@v2
         with:
           path: base.profile
           key: ${{ hashFiles('**/*.go') }}
-      - name: Extract base coverage
+      - name: Extract base test coverage
         if: steps.cache-base.outputs.cache-hit != 'true'
         run: go test -cover -coverprofile=base.profile ./...
       - name: Checkout head
@@ -37,22 +37,22 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           clean: false
-      - name: Cache head coverage data
+      - name: Cache head test coverage data
         id: cache-head
         uses: actions/cache@v2
         with:
           path: head.profile
           key: ${{ hashFiles('**/*.go') }}
-      - name: Extract head coverage
+      - name: Extract head test coverage
         if: steps.cache-head.outputs.cache-hit != 'true'
         run: go test -cover -coverprofile=head.profile ./...
-      - name: Diff coverage
-        run: |
-          GO111MODULE=off go get -u github.com/flipgroup/goverdiff && \
-            goverdiff base.profile head.profile
+      - name: Diff test coverage
         env:
           GITHUB_PULL_REQUEST_ID: ${{ github.event.number }}
           GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          go install github.com/flipgroup/goverdiff@main && \
+            goverdiff base.profile head.profile
 ```
 
-Note: This only works on pull_request. A push doesnt have a base ref to check against.
+**Note:** This only works for a `pull_request` workflow event type. A push doesn't provide a `base.ref` to check against.
