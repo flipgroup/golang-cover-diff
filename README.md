@@ -14,6 +14,7 @@ jobs:
   main:
     name: Coverage
     runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]' && github.actor != 'dependabot-preview[bot]'
     steps:
       - name: Setup Golang
         uses: actions/setup-go@v2
