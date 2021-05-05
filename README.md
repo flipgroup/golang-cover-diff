@@ -24,6 +24,15 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.base.ref }}
+      - name: Setup Golang caches
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-golang-${{ hashFiles('go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-golang-
       - name: Cache base test coverage data
         id: cache-base
         uses: actions/cache@v2
