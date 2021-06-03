@@ -55,26 +55,29 @@ func main() {
 func createOrUpdateComment(ctx context.Context, title string, details string) {
 	token := os.Getenv("GITHUB_TOKEN")
 	if token == "" {
-		fmt.Println("no GITHUB_TOKEN, not reporting to github.")
+		fmt.Println("no GITHUB_TOKEN, not reporting to GitHub.")
 		return
 	}
+
 	ownerAndRepo := os.Getenv("GITHUB_REPOSITORY")
 	if ownerAndRepo == "" {
-		fmt.Println("no GITHUB_REPOSITORY, not reporting to github.")
+		fmt.Println("no GITHUB_REPOSITORY, not reporting to GitHub.")
 		return
 	}
+
 	repoparts := strings.SplitN(ownerAndRepo, "/", 2)
 	owner := repoparts[0]
 	repo := repoparts[1]
 
 	prIdStr := os.Getenv("GITHUB_PULL_REQUEST_ID")
 	if prIdStr == "" {
-		fmt.Println("no GITHUB_PULL_REQUEST_ID, not reporting to github.")
+		fmt.Println("no GITHUB_PULL_REQUEST_ID, not reporting to GitHub.")
 		return
 	}
+
 	prID, err := strconv.Atoi(os.Getenv("GITHUB_PULL_REQUEST_ID"))
 	if err != nil {
-		fmt.Println("GITHUB_PULL_REQUEST_ID not a valid number, not reporting to github.")
+		fmt.Println("GITHUB_PULL_REQUEST_ID not a valid number, not reporting to GitHub.")
 		return
 	}
 
@@ -82,8 +85,8 @@ func createOrUpdateComment(ctx context.Context, title string, details string) {
 		&oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")},
 	)
 	tc := oauth2.NewClient(context.Background(), ts)
-	client := github.NewClient(tc)
 
+	client := github.NewClient(tc)
 	comments, _, err := client.Issues.ListComments(ctx, owner, repo, prID, &github.IssueListCommentsOptions{})
 	if err != nil {
 		panic(err)
@@ -111,6 +114,7 @@ func createOrUpdateComment(ctx context.Context, title string, details string) {
 			return
 		}
 	}
+
 	_, _, err = client.Issues.CreateComment(ctx, owner, repo, prID, &github.IssueComment{
 		Body: &body,
 	})
