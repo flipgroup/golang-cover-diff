@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"math"
 	"os"
 	"regexp"
@@ -149,7 +148,7 @@ func relativePackage(pkg string, root string) string {
 }
 
 func getModulePackageName() string {
-	f, err := ioutil.ReadFile("go.mod")
+	f, err := os.ReadFile("go.mod")
 	if err != nil {
 		return ""
 	}
