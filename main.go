@@ -53,6 +53,8 @@ func main() {
 }
 
 func createOrUpdateComment(ctx context.Context, title string, details string) {
+	const coverageReportHeaderMarkdown = "### coverage diff"
+
 	auth_token := os.Getenv("GITHUB_TOKEN")
 	if auth_token == "" {
 		fmt.Println("no GITHUB_TOKEN, unable to report back to GitHub pull request.")
@@ -93,7 +95,10 @@ func createOrUpdateComment(ctx context.Context, title string, details string) {
 	}
 
 	// iterate over existing pull request comments - if existing coverage comment found then update
-	body := fmt.Sprintf("### coverage diff\n%s\n\n```\n%s```\n", title, details)
+	body := fmt.Sprintf("%s\n%s\n\n```\n%s```\n",
+		coverageReportHeaderMarkdown,
+		title, details)
+
 	for _, c := range comments {
 		if c.Body == nil {
 			continue
@@ -104,7 +109,7 @@ func createOrUpdateComment(ctx context.Context, title string, details string) {
 			return
 		}
 
-		if strings.HasPrefix(*c.Body, "### coverage diff") {
+		if strings.HasPrefix(*c.Body, coverageReportHeaderMarkdown) {
 			// found existing cover comment - update
 			_, _, err = client.Issues.EditComment(ctx, owner, repo, *c.ID, &github.IssueComment{
 				Body: &body,
