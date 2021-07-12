@@ -53,9 +53,11 @@ func main() {
 }
 
 func createOrUpdateComment(ctx context.Context, title string, details string) {
-	token := os.Getenv("GITHUB_TOKEN")
-	if token == "" {
-		fmt.Println("no GITHUB_TOKEN, not reporting to GitHub.")
+	const coverageReportHeaderMarkdown = "### coverage diff"
+
+	auth_token := os.Getenv("GITHUB_TOKEN")
+	if auth_token == "" {
+		fmt.Println("no GITHUB_TOKEN, unable to report back to GitHub pull request.")
 		return
 	}
 
@@ -65,9 +67,9 @@ func createOrUpdateComment(ctx context.Context, title string, details string) {
 		return
 	}
 
-	repoparts := strings.SplitN(ownerAndRepo, "/", 2)
-	owner := repoparts[0]
-	repo := repoparts[1]
+	parts := strings.SplitN(ownerAndRepo, "/", 2)
+	owner := parts[0]
+	repo := parts[1]
 
 	prIdStr := os.Getenv("GITHUB_PULL_REQUEST_ID")
 	if prIdStr == "" {
@@ -77,12 +79,12 @@ func createOrUpdateComment(ctx context.Context, title string, details string) {
 
 	prID, err := strconv.Atoi(os.Getenv("GITHUB_PULL_REQUEST_ID"))
 	if err != nil {
-		fmt.Println("GITHUB_PULL_REQUEST_ID not a valid number, not reporting to GitHub.")
+		fmt.Println("provided GITHUB_PULL_REQUEST_ID is not a valid number, not reporting to GitHub.")
 		return
 	}
 
 	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")},
+		&oauth2.Token{AccessToken: auth_token},
 	)
 	tc := oauth2.NewClient(context.Background(), ts)
 
@@ -92,7 +94,10 @@ func createOrUpdateComment(ctx context.Context, title string, details string) {
 		panic(err)
 	}
 
-	body := "### coverage diff\n" + title + "\n\n```\n" + details + "```\n"
+	// iterate over existing pull request comments - if existing coverage comment found then update
+	body := fmt.Sprintf("%s\n%s\n\n```\n%s```\n",
+		coverageReportHeaderMarkdown,
+		title, details)
 
 	for _, c := range comments {
 		if c.Body == nil {
@@ -100,11 +105,12 @@ func createOrUpdateComment(ctx context.Context, title string, details string) {
 		}
 
 		if *c.Body == body {
-			// no change required, lets GTFO.
+			// existing comment body is the same - no change required
 			return
 		}
 
-		if strings.HasPrefix(*c.Body, "### coverage diff") {
+		if strings.HasPrefix(*c.Body, coverageReportHeaderMarkdown) {
+			// found existing cover comment - update
 			_, _, err = client.Issues.EditComment(ctx, owner, repo, *c.ID, &github.IssueComment{
 				Body: &body,
 			})
@@ -115,6 +121,7 @@ func createOrUpdateComment(ctx context.Context, title string, details string) {
 		}
 	}
 
+	// no coverage comment found - create new comment
 	_, _, err = client.Issues.CreateComment(ctx, owner, repo, prID, &github.IssueComment{
 		Body: &body,
 	})
