@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -30,7 +29,7 @@ func main() {
 	rootName := getModulePackageName()
 
 	// write report header
-	var buf bytes.Buffer
+	var buf strings.Builder
 	buf.WriteString(fmt.Sprintf("%-84s %7s %7s %8s\n", "package name", "before", "after", "delta"))
 
 	// write package lines
