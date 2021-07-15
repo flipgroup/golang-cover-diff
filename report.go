@@ -80,7 +80,7 @@ func LoadCoverProfile(filename string) (*CoverProfile, error) {
 		line++
 		match := lineRe.FindStringSubmatch(scanner.Text())
 		if match == nil {
-			return nil, fmt.Errorf("malformed line: %s", scanner.Text())
+			return nil, fmt.Errorf("malformed coverage line: %s", scanner.Text())
 		}
 
 		path := match[1]
