@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -14,37 +14,48 @@ import (
 type CoverProfile struct {
 	Mode     string
 	Packages map[string]*Package
-	Total    int
-	Covered  int
-}
 
-func (c *CoverProfile) Coverage() float64 {
-	if c == nil {
-		return math.NaN()
-	}
-
-	return float64(c.Covered) / float64(c.Total)
-}
-
-type Package struct {
-	Name    string
-	Blocks  []Block
 	Total   int
 	Covered int
 }
 
-func (p *Package) Coverage() float64 {
-	if p == nil {
-		return math.NaN()
+func (c *CoverProfile) Coverage() int {
+	if c == nil {
+		return -1
 	}
 
-	return float64(p.Covered) / float64(p.Total)
+	if c.Total < 1 {
+		return -1
+	}
+
+	return int(float64(c.Covered) / float64(c.Total) * 10000)
+}
+
+type Package struct {
+	Name   string
+	Blocks []Block
+
+	Total   int
+	Covered int
+}
+
+func (p *Package) Coverage() int {
+	if p == nil {
+		return -1
+	}
+
+	if p.Total < 1 {
+		return -1
+	}
+
+	return int(float64(p.Covered) / float64(p.Total) * 10000)
 }
 
 type Block struct {
-	Filename       string
-	Start          Position
-	End            Position
+	Filename string
+	Start    Position
+	End      Position
+
 	StatementCount int
 	HitCount       int
 }
@@ -55,19 +66,25 @@ type Position struct {
 }
 
 func LoadCoverProfile(filename string) (*CoverProfile, error) {
+	// open cover profile file
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
+	// parse contents and return results
+	return parseCoverProfile(file)
+}
+
+func parseCoverProfile(r io.Reader) (*CoverProfile, error) {
+	scanner := bufio.NewScanner(r)
 	if !scanner.Scan() {
 		return nil, fmt.Errorf("missing header")
 	}
 	header := scanner.Text()
 	if !strings.HasPrefix(header, "mode: ") {
-		return nil, fmt.Errorf("file must start with mode header")
+		return nil, fmt.Errorf("profile must start with [mode: ] header")
 	}
 
 	profile := &CoverProfile{
@@ -78,11 +95,12 @@ func LoadCoverProfile(filename string) (*CoverProfile, error) {
 	line := 0
 	for scanner.Scan() {
 		line++
-		match := lineRe.FindStringSubmatch(scanner.Text())
+		match := lineRegexp.FindStringSubmatch(scanner.Text())
 		if match == nil {
-			return nil, fmt.Errorf("malformed line: %s", scanner.Text())
+			return nil, fmt.Errorf("malformed coverage line: %s", scanner.Text())
 		}
 
+		// note: format of each coverage line https://github.com/golang/tools/blob/0cf4e2708ac840da8674eb3947b660a931bd2c1f/cover/profile.go#L51-L54
 		path := match[1]
 		pkgName := filepath.Dir(path)
 		fileName := filepath.Base(path)
@@ -108,24 +126,27 @@ func LoadCoverProfile(filename string) (*CoverProfile, error) {
 		}
 		hitCount, err := strconv.Atoi(match[7])
 		if err != nil {
-			return nil, fmt.Errorf("invalid endCol on line %d: %w", line, err)
-		}
-		p := profile.Packages[pkgName]
-		if p == nil {
-			p = &Package{
-				Name: pkgName,
-			}
-			profile.Packages[pkgName] = p
+			return nil, fmt.Errorf("invalid hitCount on line %d: %w", line, err)
 		}
 
-		p.Total += statementCount
+		pkgData := profile.Packages[pkgName]
+		if pkgData == nil {
+			// package not yet seen - create new struct
+			pkgData = &Package{
+				Name: pkgName,
+			}
+			profile.Packages[pkgName] = pkgData
+		}
+
+		// increment statement and coverage (hit) counts at both a package and overall profile level
+		pkgData.Total += statementCount
 		profile.Total += statementCount
 		if hitCount > 0 {
-			p.Covered += statementCount
+			pkgData.Covered += statementCount
 			profile.Covered += statementCount
 		}
 
-		p.Blocks = append(p.Blocks, Block{
+		pkgData.Blocks = append(pkgData.Blocks, Block{
 			Filename: fileName,
 			Start: Position{
 				Line:   startLine,
@@ -143,4 +164,5 @@ func LoadCoverProfile(filename string) (*CoverProfile, error) {
 	return profile, scanner.Err()
 }
 
-var lineRe = regexp.MustCompile(`^([^:]*):(\d*)\.(\d*),(\d*)\.(\d*) (\d*) (\d*)$`)
+// spec: https://github.com/golang/tools/blob/0cf4e2708ac840da8674eb3947b660a931bd2c1f/cover/profile.go#L119-L123
+var lineRegexp = regexp.MustCompile(`^([^:]+):([0-9]+)\.([0-9]+),([0-9]+)\.([0-9]+) ([0-9]+) ([0-9]+)$`)

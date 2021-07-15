@@ -1,10 +1,8 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"math"
 	"os"
 	"regexp"
 	"sort"
@@ -17,6 +15,7 @@ import (
 )
 
 func main() {
+	// load given base and head `go test` cover profiles from disk
 	base, err := LoadCoverProfile(os.Args[1])
 	if err != nil {
 		panic(err)
@@ -29,30 +28,36 @@ func main() {
 
 	rootName := getModulePackageName()
 
-	var buf bytes.Buffer
+	// write report header
+	var buf strings.Builder
 	buf.WriteString(fmt.Sprintf("%-84s %7s %7s %8s\n", "package name", "before", "after", "delta"))
+
+	// write package lines
 	for _, pkg := range getAllPackages(base, head) {
 		baseCov := base.Packages[pkg].Coverage()
 		headCov := head.Packages[pkg].Coverage()
-		buf.WriteString(fmt.Sprintf("%-84s %7s %7s %8s\n", relativePackage(pkg, rootName), coverageDescription(baseCov), coverageDescription(headCov), diffDescription(baseCov, headCov)))
-	}
-	buf.WriteString(fmt.Sprintf("%84s %7s %7s %8s\n", "total:", coverageDescription(base.Coverage()), coverageDescription(head.Coverage()), diffDescription(base.Coverage(), head.Coverage())))
-
-	fmt.Println(buf.String())
-
-	var title string
-	if base.Coverage() == head.Coverage() {
-		title = "Coverage unchanged."
-	} else if base.Coverage() > head.Coverage() {
-		title = fmt.Sprintf("Coverage decreased by %6.1f%%. :bell: Shame :bell:", (base.Coverage()-head.Coverage())*100)
-	} else {
-		title = fmt.Sprintf("Coverage increased by %6.1f%%. Keep it up :medal_sports:", (head.Coverage()-base.Coverage())*100)
+		buf.WriteString(fmt.Sprintf("%-84s %7s %7s %8s\n",
+			relativePackage(pkg, rootName),
+			coverageDescription(baseCov),
+			coverageDescription(headCov),
+			diffDescription(baseCov, headCov)))
 	}
 
-	createOrUpdateComment(context.Background(), title, buf.String())
+	// write totals
+	buf.WriteString(fmt.Sprintf("%84s %7s %7s %8s\n", "total:",
+		coverageDescription(base.Coverage()),
+		coverageDescription(head.Coverage()),
+		diffDescription(base.Coverage(), head.Coverage()),
+	))
+
+	// generate GitHub pull request message
+	createOrUpdateComment(
+		context.Background(),
+		summaryMessage(base.Coverage(), head.Coverage()),
+		buf.String())
 }
 
-func createOrUpdateComment(ctx context.Context, title string, details string) {
+func createOrUpdateComment(ctx context.Context, title, details string) {
 	const coverageReportHeaderMarkdown = "### coverage diff"
 
 	auth_token := os.Getenv("GITHUB_TOKEN")
@@ -130,28 +135,40 @@ func createOrUpdateComment(ctx context.Context, title string, details string) {
 	}
 }
 
-func coverageDescription(coverage float64) string {
-	if math.IsNaN(coverage) {
+func coverageDescription(coverage int) string {
+	if coverage < 0 {
 		return "-"
 	}
-	return fmt.Sprintf("%6.1f%%", coverage*100)
+	return fmt.Sprintf("%6.2f%%", float64(coverage)/100)
 }
 
-func diffDescription(base float64, head float64) string {
-	if math.IsNaN(base) && math.IsNaN(head) {
+func diffDescription(base, head int) string {
+	if base < 0 && head < 0 {
 		return ""
 	}
-	if math.IsNaN(base) {
+	if base < 0 {
 		return "new"
 	}
-	if math.IsNaN(head) {
+	if head < 0 {
 		return "deleted"
 	}
 
-	return fmt.Sprintf("%+6.1f%%", (head-base)*100)
+	return fmt.Sprintf("%+6.2f%%", float64(head-base)/100)
 }
 
-func relativePackage(pkg string, root string) string {
+func summaryMessage(base, head int) string {
+	if base == head {
+		return "Coverage unchanged."
+	}
+
+	if base > head {
+		return fmt.Sprintf("Coverage decreased by %6.1f%%. :bell: Shame :bell:", float64(base-head)/100)
+	}
+
+	return fmt.Sprintf("Coverage increased by %6.1f%%. Keep it up :medal_sports:", float64(head-base)/100)
+}
+
+func relativePackage(pkg, root string) string {
 	if strings.HasPrefix(pkg, root) {
 		return "./" + strings.TrimPrefix(pkg, root)
 	}
@@ -164,10 +181,10 @@ func getModulePackageName() string {
 		return ""
 	}
 	// found it, stop searching
-	return string(modregex.FindSubmatch(f)[1]) + "/"
+	return string(modRegex.FindSubmatch(f)[1]) + "/"
 }
 
-var modregex = regexp.MustCompile(`module ([^\s]*)`)
+var modRegex = regexp.MustCompile(`module ([^\s]*)`)
 
 func getAllPackages(profiles ...*CoverProfile) []string {
 	set := map[string]struct{}{}
