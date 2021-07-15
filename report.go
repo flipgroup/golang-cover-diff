@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"math"
 	"os"
 	"path/filepath"
@@ -57,13 +58,19 @@ type Position struct {
 }
 
 func LoadCoverProfile(filename string) (*CoverProfile, error) {
+	// open cover profile file
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
+	// parse contents and return results
+	return parseCoverProfile(file)
+}
+
+func parseCoverProfile(r io.Reader) (*CoverProfile, error) {
+	scanner := bufio.NewScanner(r)
 	if !scanner.Scan() {
 		return nil, fmt.Errorf("missing header")
 	}
