@@ -119,3 +119,22 @@ github.com/flipgroup/module/another/file.go:88.39,24.2 80 0
 		assert.Equal(t, 3000, pkg02.Coverage()) // equal to 30%
 	})
 }
+
+func TestMessaging(t *testing.T) {
+	t.Run("coverageDescription()", func(t *testing.T) {
+		assert.Equal(t, "-", coverageDescription(-1))
+		assert.Equal(t, "  0.00%", coverageDescription(0))
+		assert.Equal(t, " 63.63%", coverageDescription(6363))
+	})
+
+	t.Run("diffDescription()", func(t *testing.T) {
+		assert.Equal(t, "", diffDescription(-1, -1))
+		assert.Equal(t, "new", diffDescription(-1, 100))
+		assert.Equal(t, "deleted", diffDescription(100, -1))
+
+		assert.Equal(t, " +0.05%", diffDescription(100, 105))
+		assert.Equal(t, " -0.05%", diffDescription(105, 100))
+		assert.Equal(t, " +1.05%", diffDescription(100, 205))
+		assert.Equal(t, " -1.05%", diffDescription(205, 100))
+	})
+}

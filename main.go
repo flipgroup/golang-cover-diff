@@ -130,25 +130,25 @@ func createOrUpdateComment(ctx context.Context, title string, details string) {
 	}
 }
 
-func coverageDescription(coverage float64) string {
-	if math.IsNaN(coverage) {
+func coverageDescription(coverage int) string {
+	if coverage < 0 {
 		return "-"
 	}
-	return fmt.Sprintf("%6.1f%%", coverage*100)
+	return fmt.Sprintf("%6.2f%%", float64(coverage)/100)
 }
 
-func diffDescription(base float64, head float64) string {
-	if math.IsNaN(base) && math.IsNaN(head) {
+func diffDescription(base, head int) string {
+	if base < 0 && head < 0 {
 		return ""
 	}
-	if math.IsNaN(base) {
+	if base < 0 {
 		return "new"
 	}
-	if math.IsNaN(head) {
+	if head < 0 {
 		return "deleted"
 	}
 
-	return fmt.Sprintf("%+6.1f%%", (head-base)*100)
+	return fmt.Sprintf("%+6.2f%%", float64(head-base)/100)
 }
 
 func relativePackage(pkg string, root string) string {
