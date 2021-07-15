@@ -151,7 +151,19 @@ func diffDescription(base, head int) string {
 	return fmt.Sprintf("%+6.2f%%", float64(head-base)/100)
 }
 
-func relativePackage(pkg string, root string) string {
+func summaryMessage(base, head int) string {
+	if base == head {
+		return "Coverage unchanged."
+	}
+
+	if base > head {
+		return fmt.Sprintf("Coverage decreased by %6.1f%%. :bell: Shame :bell:", float64(base-head)/100)
+	}
+
+	return fmt.Sprintf("Coverage increased by %6.1f%%. Keep it up :medal_sports:", float64(head-base)/100)
+}
+
+func relativePackage(pkg, root string) string {
 	if strings.HasPrefix(pkg, root) {
 		return "./" + strings.TrimPrefix(pkg, root)
 	}

@@ -137,4 +137,12 @@ func TestMessaging(t *testing.T) {
 		assert.Equal(t, " +1.05%", diffDescription(100, 205))
 		assert.Equal(t, " -1.05%", diffDescription(205, 100))
 	})
+
+	t.Run("summaryMessage()", func(t *testing.T) {
+		assert.Equal(t, "Coverage unchanged.", summaryMessage(100, 100))
+		assert.Equal(t, "Coverage decreased by    1.1%. :bell: Shame :bell:", summaryMessage(205, 100))         // 2.05% -> 1.00%
+		assert.Equal(t, "Coverage decreased by   99.0%. :bell: Shame :bell:", summaryMessage(10000, 100))       // 100.00% -> 1.00%
+		assert.Equal(t, "Coverage increased by    1.1%. Keep it up :medal_sports:", summaryMessage(100, 205))   // 1.00% -> 2.05%
+		assert.Equal(t, "Coverage increased by   99.0%. Keep it up :medal_sports:", summaryMessage(100, 10000)) // 1.00% -> 100.00%
+	})
 }
