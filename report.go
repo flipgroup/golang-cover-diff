@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"math"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -20,12 +19,16 @@ type CoverProfile struct {
 	Covered int
 }
 
-func (c *CoverProfile) Coverage() float64 {
+func (c *CoverProfile) Coverage() int {
 	if c == nil {
-		return math.NaN()
+		return -1
 	}
 
-	return float64(c.Covered) / float64(c.Total)
+	if c.Total < 1 {
+		return -1
+	}
+
+	return int(float64(c.Covered) / float64(c.Total) * 10000)
 }
 
 type Package struct {
@@ -36,18 +39,23 @@ type Package struct {
 	Covered int
 }
 
-func (p *Package) Coverage() float64 {
+func (p *Package) Coverage() int {
 	if p == nil {
-		return math.NaN()
+		return -1
 	}
 
-	return float64(p.Covered) / float64(p.Total)
+	if p.Total < 1 {
+		return -1
+	}
+
+	return int(float64(p.Covered) / float64(p.Total) * 10000)
 }
 
 type Block struct {
-	Filename       string
-	Start          Position
-	End            Position
+	Filename string
+	Start    Position
+	End      Position
+
 	StatementCount int
 	HitCount       int
 }
