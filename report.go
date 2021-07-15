@@ -80,7 +80,7 @@ func LoadCoverProfile(filename string) (*CoverProfile, error) {
 	line := 0
 	for scanner.Scan() {
 		line++
-		match := lineRe.FindStringSubmatch(scanner.Text())
+		match := lineRegexp.FindStringSubmatch(scanner.Text())
 		if match == nil {
 			return nil, fmt.Errorf("malformed coverage line: %s", scanner.Text())
 		}
@@ -149,4 +149,5 @@ func LoadCoverProfile(filename string) (*CoverProfile, error) {
 	return profile, scanner.Err()
 }
 
-var lineRe = regexp.MustCompile(`^([^:]*):(\d*)\.(\d*),(\d*)\.(\d*) (\d*) (\d*)$`)
+// spec: https://github.com/golang/tools/blob/0cf4e2708ac840da8674eb3947b660a931bd2c1f/cover/profile.go#L119-L123
+var lineRegexp = regexp.MustCompile(`^([^:]+):([0-9]+)\.([0-9]+),([0-9]+)\.([0-9]+) ([0-9]+) ([0-9]+)$`)
