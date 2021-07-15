@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"math"
 	"os"
 	"regexp"
 	"sort"
@@ -17,6 +16,7 @@ import (
 )
 
 func main() {
+	// load given base and head `go test` cover profiles from disk
 	base, err := LoadCoverProfile(os.Args[1])
 	if err != nil {
 		panic(err)
@@ -29,30 +29,36 @@ func main() {
 
 	rootName := getModulePackageName()
 
+	// write report header
 	var buf bytes.Buffer
 	buf.WriteString(fmt.Sprintf("%-84s %7s %7s %8s\n", "package name", "before", "after", "delta"))
+
+	// write package lines
 	for _, pkg := range getAllPackages(base, head) {
 		baseCov := base.Packages[pkg].Coverage()
 		headCov := head.Packages[pkg].Coverage()
-		buf.WriteString(fmt.Sprintf("%-84s %7s %7s %8s\n", relativePackage(pkg, rootName), coverageDescription(baseCov), coverageDescription(headCov), diffDescription(baseCov, headCov)))
-	}
-	buf.WriteString(fmt.Sprintf("%84s %7s %7s %8s\n", "total:", coverageDescription(base.Coverage()), coverageDescription(head.Coverage()), diffDescription(base.Coverage(), head.Coverage())))
-
-	fmt.Println(buf.String())
-
-	var title string
-	if base.Coverage() == head.Coverage() {
-		title = "Coverage unchanged."
-	} else if base.Coverage() > head.Coverage() {
-		title = fmt.Sprintf("Coverage decreased by %6.1f%%. :bell: Shame :bell:", (base.Coverage()-head.Coverage())*100)
-	} else {
-		title = fmt.Sprintf("Coverage increased by %6.1f%%. Keep it up :medal_sports:", (head.Coverage()-base.Coverage())*100)
+		buf.WriteString(fmt.Sprintf("%-84s %7s %7s %8s\n",
+			relativePackage(pkg, rootName),
+			coverageDescription(baseCov),
+			coverageDescription(headCov),
+			diffDescription(baseCov, headCov)))
 	}
 
-	createOrUpdateComment(context.Background(), title, buf.String())
+	// write totals
+	buf.WriteString(fmt.Sprintf("%84s %7s %7s %8s\n", "total:",
+		coverageDescription(base.Coverage()),
+		coverageDescription(head.Coverage()),
+		diffDescription(base.Coverage(), head.Coverage()),
+	))
+
+	// generate GitHub pull request message
+	createOrUpdateComment(
+		context.Background(),
+		summaryMessage(base.Coverage(), head.Coverage()),
+		buf.String())
 }
 
-func createOrUpdateComment(ctx context.Context, title string, details string) {
+func createOrUpdateComment(ctx context.Context, title, details string) {
 	const coverageReportHeaderMarkdown = "### coverage diff"
 
 	auth_token := os.Getenv("GITHUB_TOKEN")
@@ -176,10 +182,10 @@ func getModulePackageName() string {
 		return ""
 	}
 	// found it, stop searching
-	return string(modregex.FindSubmatch(f)[1]) + "/"
+	return string(modRegex.FindSubmatch(f)[1]) + "/"
 }
 
-var modregex = regexp.MustCompile(`module ([^\s]*)`)
+var modRegex = regexp.MustCompile(`module ([^\s]*)`)
 
 func getAllPackages(profiles ...*CoverProfile) []string {
 	set := map[string]struct{}{}
