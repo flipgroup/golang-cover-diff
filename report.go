@@ -14,8 +14,9 @@ import (
 type CoverProfile struct {
 	Mode     string
 	Packages map[string]*Package
-	Total    int
-	Covered  int
+
+	Total   int
+	Covered int
 }
 
 func (c *CoverProfile) Coverage() float64 {
@@ -27,8 +28,9 @@ func (c *CoverProfile) Coverage() float64 {
 }
 
 type Package struct {
-	Name    string
-	Blocks  []Block
+	Name   string
+	Blocks []Block
+
 	Total   int
 	Covered int
 }
@@ -67,7 +69,7 @@ func LoadCoverProfile(filename string) (*CoverProfile, error) {
 	}
 	header := scanner.Text()
 	if !strings.HasPrefix(header, "mode: ") {
-		return nil, fmt.Errorf("file must start with mode header")
+		return nil, fmt.Errorf("profile must start with [mode: ] header")
 	}
 
 	profile := &CoverProfile{
@@ -83,6 +85,7 @@ func LoadCoverProfile(filename string) (*CoverProfile, error) {
 			return nil, fmt.Errorf("malformed coverage line: %s", scanner.Text())
 		}
 
+		// note: format of each coverage line https://github.com/golang/tools/blob/0cf4e2708ac840da8674eb3947b660a931bd2c1f/cover/profile.go#L51-L54
 		path := match[1]
 		pkgName := filepath.Dir(path)
 		fileName := filepath.Base(path)
@@ -108,24 +111,27 @@ func LoadCoverProfile(filename string) (*CoverProfile, error) {
 		}
 		hitCount, err := strconv.Atoi(match[7])
 		if err != nil {
-			return nil, fmt.Errorf("invalid endCol on line %d: %w", line, err)
-		}
-		p := profile.Packages[pkgName]
-		if p == nil {
-			p = &Package{
-				Name: pkgName,
-			}
-			profile.Packages[pkgName] = p
+			return nil, fmt.Errorf("invalid hitCount on line %d: %w", line, err)
 		}
 
-		p.Total += statementCount
+		pkgData := profile.Packages[pkgName]
+		if pkgData == nil {
+			// package not yet seen - create new struct
+			pkgData = &Package{
+				Name: pkgName,
+			}
+			profile.Packages[pkgName] = pkgData
+		}
+
+		// increment statement and coverage (hit) counts at both a package and overall profile level
+		pkgData.Total += statementCount
 		profile.Total += statementCount
 		if hitCount > 0 {
-			p.Covered += statementCount
+			pkgData.Covered += statementCount
 			profile.Covered += statementCount
 		}
 
-		p.Blocks = append(p.Blocks, Block{
+		pkgData.Blocks = append(pkgData.Blocks, Block{
 			Filename: fileName,
 			Start: Position{
 				Line:   startLine,
