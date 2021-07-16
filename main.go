@@ -35,11 +35,11 @@ func main() {
 	buf.WriteString(fmt.Sprintf("%-84s %7s %7s %8s\n", "package name", "before", "after", "delta"))
 
 	// write package lines
-	for _, pkg := range getAllPackages(base, head) {
-		baseCov := base.Packages[pkg].Coverage()
-		headCov := head.Packages[pkg].Coverage()
+	for _, pkgName := range getAllPackages(base, head) {
+		baseCov := base.Packages[pkgName].Coverage()
+		headCov := head.Packages[pkgName].Coverage()
 		buf.WriteString(fmt.Sprintf("%-84s %7s %7s %8s\n",
-			relativePackage(pkg, rootName),
+			relativePackage(rootName, pkgName),
 			coverageDescription(baseCov),
 			coverageDescription(headCov),
 			diffDescription(baseCov, headCov)))
@@ -137,6 +137,13 @@ func createOrUpdateComment(ctx context.Context, title, details string) {
 	}
 }
 
+func relativePackage(root, pkgName string) string {
+	if strings.HasPrefix(pkgName, root) {
+		return "./" + strings.TrimPrefix(pkgName, root)
+	}
+	return pkgName
+}
+
 func coverageDescription(coverage int) string {
 	if coverage < 0 {
 		return "-"
@@ -168,13 +175,6 @@ func summaryMessage(base, head int) string {
 	}
 
 	return fmt.Sprintf("Coverage increased by %6.1f%%. Keep it up :medal_sports:", float64(head-base)/100)
-}
-
-func relativePackage(pkg, root string) string {
-	if strings.HasPrefix(pkg, root) {
-		return "./" + strings.TrimPrefix(pkg, root)
-	}
-	return pkg
 }
 
 func getModulePackageName() string {
