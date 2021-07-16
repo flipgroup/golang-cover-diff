@@ -28,7 +28,7 @@ func main() {
 		panic(err)
 	}
 
-	rootName := getModulePackageName()
+	rootPkgName := getModulePackageName() + "/"
 
 	// write report header
 	var buf strings.Builder
@@ -39,7 +39,7 @@ func main() {
 		baseCov := base.Packages[pkgName].Coverage()
 		headCov := head.Packages[pkgName].Coverage()
 		buf.WriteString(fmt.Sprintf("%-84s %7s %7s %8s\n",
-			relativePackage(rootName, pkgName),
+			relativePackage(rootPkgName, pkgName),
 			coverageDescription(baseCov),
 			coverageDescription(headCov),
 			diffDescription(baseCov, headCov)))
@@ -180,13 +180,14 @@ func summaryMessage(base, head int) string {
 func getModulePackageName() string {
 	f, err := os.ReadFile("go.mod")
 	if err != nil {
+		// unable to determine package name
 		return ""
 	}
-	// found it, stop searching
-	return string(modRegex.FindSubmatch(f)[1]) + "/"
-}
 
-var modRegex = regexp.MustCompile(`module ([^\s]*)`)
+	// found it, stop searching
+	modRegex := regexp.MustCompile(`module +([^\s]+)`)
+	return string(modRegex.FindSubmatch(f)[1])
+}
 
 func getAllPackages(profiles ...*CoverProfile) []string {
 	set := map[string]struct{}{}
