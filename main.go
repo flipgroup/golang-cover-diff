@@ -11,7 +11,6 @@ import (
 
 	"github.com/google/go-github/v34/github"
 	"golang.org/x/oauth2"
-	"golang.org/x/tools/go/packages"
 )
 
 func main() {
@@ -199,16 +198,7 @@ func getModulePackageName() string {
 }
 
 func getAllPackages(profiles ...*CoverProfile) []string {
-	pkg, err := packages.Load(&packages.Config{Mode: packages.NeedName}, "./...")
-	if err != nil {
-		panic(err)
-	}
-
 	set := map[string]struct{}{}
-	for _, p := range pkg {
-		set[p.PkgPath] = struct{}{}
-	}
-
 	for _, profile := range profiles {
 		for name := range profile.Packages {
 			set[name] = struct{}{}
