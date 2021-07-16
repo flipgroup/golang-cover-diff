@@ -15,6 +15,8 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
+
 	// load given base and head `go test` cover profiles from disk
 	base, err := LoadCoverProfile(os.Args[1])
 	if err != nil {
@@ -52,7 +54,7 @@ func main() {
 
 	// generate GitHub pull request message
 	createOrUpdateComment(
-		context.Background(),
+		ctx,
 		summaryMessage(base.Coverage(), head.Coverage()),
 		buf.String())
 }
