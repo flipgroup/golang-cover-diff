@@ -162,7 +162,7 @@ func coverageDescription(coverage int) string {
 
 func diffDescription(base, head int) string {
 	if base < 0 && head < 0 {
-		return ""
+		return "n/a"
 	}
 	if base < 0 {
 		return "new"
