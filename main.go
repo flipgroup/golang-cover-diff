@@ -28,17 +28,27 @@ func main() {
 		panic(err)
 	}
 
-	rootPkgName := getModulePackageName() + "/"
+	// generate GitHub pull request message
+	createOrUpdateComment(
+		ctx,
+		summaryMessage(base.Coverage(), head.Coverage()),
+		buildTable(getModulePackageName(), base, head))
+}
+
+func buildTable(rootPkgName string, base, head *CoverProfile) string {
+	const tableRowSprintf = "%-80s %8s %8s %8s\n"
+	rootPkgName += "/"
 
 	// write report header
 	var buf strings.Builder
-	buf.WriteString(fmt.Sprintf("%-84s %7s %7s %8s\n", "package name", "before", "after", "delta"))
+	buf.WriteString(fmt.Sprintf(tableRowSprintf, "package", "before", "after", "delta"))
+	buf.WriteString(fmt.Sprintf(tableRowSprintf, "-------", "------", "-----", "-----"))
 
 	// write package lines
 	for _, pkgName := range getAllPackages(base, head) {
 		baseCov := base.Packages[pkgName].Coverage()
 		headCov := head.Packages[pkgName].Coverage()
-		buf.WriteString(fmt.Sprintf("%-84s %7s %7s %8s\n",
+		buf.WriteString(fmt.Sprintf(tableRowSprintf,
 			relativePackage(rootPkgName, pkgName),
 			coverageDescription(baseCov),
 			coverageDescription(headCov),
@@ -46,17 +56,14 @@ func main() {
 	}
 
 	// write totals
-	buf.WriteString(fmt.Sprintf("%84s %7s %7s %8s\n", "total:",
+	buf.WriteString(fmt.Sprintf("%80s %8s %8s %8s\n",
+		"total:",
 		coverageDescription(base.Coverage()),
 		coverageDescription(head.Coverage()),
 		diffDescription(base.Coverage(), head.Coverage()),
 	))
 
-	// generate GitHub pull request message
-	createOrUpdateComment(
-		ctx,
-		summaryMessage(base.Coverage(), head.Coverage()),
-		buf.String())
+	return buf.String()
 }
 
 func createOrUpdateComment(ctx context.Context, title, details string) {
@@ -138,10 +145,7 @@ func createOrUpdateComment(ctx context.Context, title, details string) {
 }
 
 func relativePackage(root, pkgName string) string {
-	if strings.HasPrefix(pkgName, root) {
-		pkgName = strings.TrimPrefix(pkgName, root)
-	}
-
+	pkgName = strings.TrimPrefix(pkgName, root)
 	if len(pkgName) > 80 {
 		pkgName = pkgName[:80]
 	}
@@ -195,12 +199,12 @@ func getModulePackageName() string {
 }
 
 func getAllPackages(profiles ...*CoverProfile) []string {
-	set := map[string]struct{}{}
-
 	pkg, err := packages.Load(&packages.Config{Mode: packages.NeedName}, "./...")
 	if err != nil {
 		panic(err)
 	}
+
+	set := map[string]struct{}{}
 	for _, p := range pkg {
 		set[p.PkgPath] = struct{}{}
 	}
