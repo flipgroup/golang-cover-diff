@@ -139,8 +139,13 @@ func createOrUpdateComment(ctx context.Context, title, details string) {
 
 func relativePackage(root, pkgName string) string {
 	if strings.HasPrefix(pkgName, root) {
-		return "./" + strings.TrimPrefix(pkgName, root)
+		pkgName = strings.TrimPrefix(pkgName, root)
 	}
+
+	if len(pkgName) > 80 {
+		pkgName = pkgName[:80]
+	}
+
 	return pkgName
 }
 
