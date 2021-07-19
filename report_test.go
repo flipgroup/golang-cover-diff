@@ -128,7 +128,7 @@ func TestMessaging(t *testing.T) {
 	})
 
 	t.Run("diffDescription()", func(t *testing.T) {
-		assert.Equal(t, "", diffDescription(-1, -1))
+		assert.Equal(t, "n/a", diffDescription(-1, -1))
 		assert.Equal(t, "new", diffDescription(-1, 100))
 		assert.Equal(t, "deleted", diffDescription(100, -1))
 
@@ -140,9 +140,11 @@ func TestMessaging(t *testing.T) {
 
 	t.Run("summaryMessage()", func(t *testing.T) {
 		assert.Equal(t, "Coverage unchanged.", summaryMessage(100, 100))
-		assert.Equal(t, "Coverage decreased by    1.1%. :bell: Shame :bell:", summaryMessage(205, 100))         // 2.05% -> 1.00%
-		assert.Equal(t, "Coverage decreased by   99.0%. :bell: Shame :bell:", summaryMessage(10000, 100))       // 100.00% -> 1.00%
-		assert.Equal(t, "Coverage increased by    1.1%. Keep it up :medal_sports:", summaryMessage(100, 205))   // 1.00% -> 2.05%
-		assert.Equal(t, "Coverage increased by   99.0%. Keep it up :medal_sports:", summaryMessage(100, 10000)) // 1.00% -> 100.00%
+		assert.Equal(t, "Coverage decreased by   1.05%. :bell: Shame :bell:", summaryMessage(205, 100))         // 2.05% -> 1.00%
+		assert.Equal(t, "Coverage decreased by  99.00%. :bell: Shame :bell:", summaryMessage(10000, 100))       // 100.00% -> 1.00%
+		assert.Equal(t, "Coverage decreased by  98.98%. :bell: Shame :bell:", summaryMessage(10000, 102))       // 100.00% -> 1.02%
+		assert.Equal(t, "Coverage increased by   1.05%. Keep it up :medal_sports:", summaryMessage(100, 205))   // 1.00% -> 2.05%
+		assert.Equal(t, "Coverage increased by  99.00%. Keep it up :medal_sports:", summaryMessage(100, 10000)) // 1.00% -> 100.00%
+		assert.Equal(t, "Coverage increased by   4.25%. Keep it up :medal_sports:", summaryMessage(100, 525))   // 1.00% -> 5.25%
 	})
 }

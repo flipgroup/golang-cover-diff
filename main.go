@@ -11,10 +11,11 @@ import (
 
 	"github.com/google/go-github/v34/github"
 	"golang.org/x/oauth2"
-	"golang.org/x/tools/go/packages"
 )
 
 func main() {
+	ctx := context.Background()
+
 	// load given base and head `go test` cover profiles from disk
 	base, err := LoadCoverProfile(os.Args[1])
 	if err != nil {
@@ -26,39 +27,46 @@ func main() {
 		panic(err)
 	}
 
-	rootName := getModulePackageName()
+	// generate GitHub pull request message
+	createOrUpdateComment(
+		ctx,
+		summaryMessage(base.Coverage(), head.Coverage()),
+		buildTable(getModulePackageName(), base, head))
+}
+
+func buildTable(rootPkgName string, base, head *CoverProfile) string {
+	const tableRowSprintf = "%-80s %8s %8s %8s\n"
+	rootPkgName += "/"
 
 	// write report header
 	var buf strings.Builder
-	buf.WriteString(fmt.Sprintf("%-84s %7s %7s %8s\n", "package name", "before", "after", "delta"))
+	buf.WriteString(fmt.Sprintf(tableRowSprintf, "package", "before", "after", "delta"))
+	buf.WriteString(fmt.Sprintf(tableRowSprintf, "-------", "------", "-----", "-----"))
 
 	// write package lines
-	for _, pkg := range getAllPackages(base, head) {
-		baseCov := base.Packages[pkg].Coverage()
-		headCov := head.Packages[pkg].Coverage()
-		buf.WriteString(fmt.Sprintf("%-84s %7s %7s %8s\n",
-			relativePackage(pkg, rootName),
+	for _, pkgName := range getAllPackages(base, head) {
+		baseCov := base.Packages[pkgName].Coverage()
+		headCov := head.Packages[pkgName].Coverage()
+		buf.WriteString(fmt.Sprintf(tableRowSprintf,
+			relativePackage(rootPkgName, pkgName),
 			coverageDescription(baseCov),
 			coverageDescription(headCov),
 			diffDescription(baseCov, headCov)))
 	}
 
 	// write totals
-	buf.WriteString(fmt.Sprintf("%84s %7s %7s %8s\n", "total:",
+	buf.WriteString(fmt.Sprintf("%80s %8s %8s %8s\n",
+		"total:",
 		coverageDescription(base.Coverage()),
 		coverageDescription(head.Coverage()),
 		diffDescription(base.Coverage(), head.Coverage()),
 	))
 
-	// generate GitHub pull request message
-	createOrUpdateComment(
-		context.Background(),
-		summaryMessage(base.Coverage(), head.Coverage()),
-		buf.String())
+	return buf.String()
 }
 
 func createOrUpdateComment(ctx context.Context, title, details string) {
-	const coverageReportHeaderMarkdown = "### coverage diff"
+	const coverageReportHeaderMarkdown = "# Golang test coverage diff report"
 
 	auth_token := os.Getenv("GITHUB_TOKEN")
 	if auth_token == "" {
@@ -135,6 +143,15 @@ func createOrUpdateComment(ctx context.Context, title, details string) {
 	}
 }
 
+func relativePackage(root, pkgName string) string {
+	pkgName = strings.TrimPrefix(pkgName, root)
+	if len(pkgName) > 80 {
+		pkgName = pkgName[:80]
+	}
+
+	return pkgName
+}
+
 func coverageDescription(coverage int) string {
 	if coverage < 0 {
 		return "-"
@@ -144,7 +161,7 @@ func coverageDescription(coverage int) string {
 
 func diffDescription(base, head int) string {
 	if base < 0 && head < 0 {
-		return ""
+		return "n/a"
 	}
 	if base < 0 {
 		return "new"
@@ -162,41 +179,26 @@ func summaryMessage(base, head int) string {
 	}
 
 	if base > head {
-		return fmt.Sprintf("Coverage decreased by %6.1f%%. :bell: Shame :bell:", float64(base-head)/100)
+		return fmt.Sprintf("Coverage decreased by %6.2f%%. :bell: Shame :bell:", float64(base-head)/100)
 	}
 
-	return fmt.Sprintf("Coverage increased by %6.1f%%. Keep it up :medal_sports:", float64(head-base)/100)
-}
-
-func relativePackage(pkg, root string) string {
-	if strings.HasPrefix(pkg, root) {
-		return "./" + strings.TrimPrefix(pkg, root)
-	}
-	return pkg
+	return fmt.Sprintf("Coverage increased by %6.2f%%. Keep it up :medal_sports:", float64(head-base)/100)
 }
 
 func getModulePackageName() string {
 	f, err := os.ReadFile("go.mod")
 	if err != nil {
+		// unable to determine package name
 		return ""
 	}
-	// found it, stop searching
-	return string(modRegex.FindSubmatch(f)[1]) + "/"
-}
 
-var modRegex = regexp.MustCompile(`module ([^\s]*)`)
+	// found it, stop searching
+	modRegex := regexp.MustCompile(`module +([^\s]+)`)
+	return string(modRegex.FindSubmatch(f)[1])
+}
 
 func getAllPackages(profiles ...*CoverProfile) []string {
 	set := map[string]struct{}{}
-
-	pkg, err := packages.Load(&packages.Config{Mode: packages.NeedName}, "./...")
-	if err != nil {
-		panic(err)
-	}
-	for _, p := range pkg {
-		set[p.PkgPath] = struct{}{}
-	}
-
 	for _, profile := range profiles {
 		for name := range profile.Packages {
 			set[name] = struct{}{}
