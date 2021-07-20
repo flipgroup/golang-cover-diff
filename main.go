@@ -27,7 +27,7 @@ func main() {
 		panic(err)
 	}
 
-	// generate GitHub pull request message
+	// generate and publish GitHub pull request message
 	createOrUpdateComment(
 		ctx,
 		summaryMessage(base.Coverage(), head.Coverage()),
@@ -179,10 +179,10 @@ func summaryMessage(base, head int) string {
 	}
 
 	if base > head {
-		return fmt.Sprintf("Coverage decreased by %6.2f%%. :bell: Shame :bell:", float64(base-head)/100)
+		return fmt.Sprintf("Coverage decreased by `%.2f%%`. :bell: Shame :bell:", float64(base-head)/100)
 	}
 
-	return fmt.Sprintf("Coverage increased by %6.2f%%. Keep it up :medal_sports:", float64(head-base)/100)
+	return fmt.Sprintf("Coverage increased by `%.2f%%`. :medal_sports: Keep it up :medal_sports:", float64(head-base)/100)
 }
 
 func getModulePackageName() string {
