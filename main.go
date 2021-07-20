@@ -90,7 +90,7 @@ func createOrUpdateComment(ctx context.Context, title, details string) {
 		return
 	}
 
-	prID, err := strconv.Atoi(os.Getenv("GITHUB_PULL_REQUEST_ID"))
+	prID, err := strconv.Atoi(prIdStr)
 	if err != nil {
 		fmt.Println("provided GITHUB_PULL_REQUEST_ID is not a valid number, not reporting to GitHub.")
 		return
