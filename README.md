@@ -1,4 +1,4 @@
-### goverdiff
+# goverdiff
 
 [![Test](https://github.com/flipgroup/goverdiff/actions/workflows/test.yml/badge.svg)](https://github.com/flipgroup/goverdiff/actions/workflows/test.yml)
 
@@ -67,4 +67,4 @@ jobs:
             goverdiff base.profile head.profile
 ```
 
-**Note:** This only works for a `pull_request` workflow event type. A push doesn't provide a `base.ref` to check against.
+**Note:** This only works for a `pull_request` workflow event type. A `push` event type doesn't provide a `base.ref` to check against.
