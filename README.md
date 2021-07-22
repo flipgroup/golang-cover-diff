@@ -16,7 +16,7 @@ jobs:
   main:
     name: Coverage
     runs-on: ubuntu-latest
-    if: github.actor != 'dependabot[bot]' && github.actor != 'dependabot-preview[bot]'
+    if: github.actor != 'dependabot[bot]'
     steps:
       - name: Setup Golang
         uses: actions/setup-go@v2
@@ -40,21 +40,20 @@ jobs:
         uses: actions/cache@v2
         with:
           path: base.profile
-          key: ${{ hashFiles('**/*.go') }}
+          key: coverage-${{ hashFiles('**/*.go') }}
       - name: Extract base test coverage
         if: steps.cache-base.outputs.cache-hit != 'true'
         run: go test -cover -coverprofile=base.profile ./...
       - name: Checkout head
         uses: actions/checkout@v2
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
           clean: false
       - name: Cache head test coverage data
         id: cache-head
         uses: actions/cache@v2
         with:
           path: head.profile
-          key: ${{ hashFiles('**/*.go') }}
+          key: coverage-${{ hashFiles('**/*.go') }}
       - name: Extract head test coverage
         if: steps.cache-head.outputs.cache-hit != 'true'
         run: go test -cover -coverprofile=head.profile ./...

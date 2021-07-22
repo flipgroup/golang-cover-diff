@@ -84,13 +84,13 @@ func createOrUpdateComment(ctx context.Context, title, details string) {
 	owner := parts[0]
 	repo := parts[1]
 
-	prIdStr := os.Getenv("GITHUB_PULL_REQUEST_ID")
-	if prIdStr == "" {
+	prNumStr := os.Getenv("GITHUB_PULL_REQUEST_ID")
+	if prNumStr == "" {
 		fmt.Println("no GITHUB_PULL_REQUEST_ID, not reporting to GitHub.")
 		return
 	}
 
-	prID, err := strconv.Atoi(prIdStr)
+	prNum, err := strconv.Atoi(prNumStr)
 	if err != nil {
 		fmt.Println("provided GITHUB_PULL_REQUEST_ID is not a valid number, not reporting to GitHub.")
 		return
@@ -102,7 +102,7 @@ func createOrUpdateComment(ctx context.Context, title, details string) {
 	tc := oauth2.NewClient(context.Background(), ts)
 
 	client := github.NewClient(tc)
-	comments, _, err := client.Issues.ListComments(ctx, owner, repo, prID, &github.IssueListCommentsOptions{})
+	comments, _, err := client.Issues.ListComments(ctx, owner, repo, prNum, &github.IssueListCommentsOptions{})
 	if err != nil {
 		panic(err)
 	}
@@ -135,7 +135,7 @@ func createOrUpdateComment(ctx context.Context, title, details string) {
 	}
 
 	// no coverage comment found - create new comment
-	_, _, err = client.Issues.CreateComment(ctx, owner, repo, prID, &github.IssueComment{
+	_, _, err = client.Issues.CreateComment(ctx, owner, repo, prNum, &github.IssueComment{
 		Body: &body,
 	})
 	if err != nil {
