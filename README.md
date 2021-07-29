@@ -8,6 +8,9 @@ Example GitHub Actions workflow to integrate:
 
 ```yaml
 name: Coverage report
+concurrency:
+  cancel-in-progress: true
+  group: cover-pr-${{ github.event.number }}
 
 on:
   pull_request:
