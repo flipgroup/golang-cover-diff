@@ -167,7 +167,7 @@ func diffDescription(base, head int) string {
 		return "new"
 	}
 	if head < 0 {
-		return "deleted"
+		return "gone"
 	}
 
 	return fmt.Sprintf("%+6.2f%%", float64(head-base)/100)
