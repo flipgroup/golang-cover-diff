@@ -130,7 +130,7 @@ func TestMessaging(t *testing.T) {
 	t.Run("diffDescription()", func(t *testing.T) {
 		assert.Equal(t, "n/a", diffDescription(-1, -1))
 		assert.Equal(t, "new", diffDescription(-1, 100))
-		assert.Equal(t, "deleted", diffDescription(100, -1))
+		assert.Equal(t, "gone", diffDescription(100, -1))
 
 		assert.Equal(t, " +0.05%", diffDescription(100, 105))
 		assert.Equal(t, " -0.05%", diffDescription(105, 100))

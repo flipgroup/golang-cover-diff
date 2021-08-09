@@ -60,7 +60,7 @@ package                                                                         
 		assert.Equal(t, strings.TrimLeft(`
 package                                                                            before    after    delta
 -------                                                                            ------    -----    -----
-my/package                                                                         37.50%        -  deleted
+my/package                                                                         37.50%        -     gone
                                                                           total:   33.33%   41.25%   +7.92%
 `, "\n"),
 			buildTable("github.com/flipgroup/goverdiff", base, head))
