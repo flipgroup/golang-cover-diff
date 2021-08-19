@@ -3,6 +3,7 @@ run:
 
 linters:
   enable:
+    - errname
     - exportloopref
     - goconst
     - godot
@@ -12,7 +13,8 @@ linters:
 
 linters-settings:
   errcheck:
-    ignore: net/http:Write
+    exclude-functions:
+      - (net/http.ResponseWriter).Write
   goconst:
     min-len: 2
     min-occurrences: 2
