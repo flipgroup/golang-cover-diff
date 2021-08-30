@@ -1,0 +1,101 @@
+name: Coverage report
+concurrency:
+  cancel-in-progress: true
+  group: cover-pr-${{ github.event.number }}
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  main:
+    name: Coverage
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+
+      # insert required bootstrap steps (e.g. Docker package registry login, additional packages)
+
+      - name: Setup Golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: ~1.16
+      - name: Checkout source
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@v2
+      - name: Checkout pull request base
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+      - name: Setup Golang caches
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-golang-${{ hashFiles('go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-golang-
+      - name: Cache base cover profile
+        id: cache-base
+        uses: actions/cache@v2
+        with:
+          path: base.profile
+          key: cover-profile-${{ hashFiles('**/*.go') }}
+      - name: Generate base cover profile
+        if: steps.cache-base.outputs.cache-hit != 'true'
+
+        # generate cover profile as `base.profile`
+        # example:
+        # > env:
+        # >   GOFLAGS: -cover -coverprofile=base.profile
+        # > run: make test
+
+      - name: Checkout source
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v2
+        with:
+          clean: false
+      - name: Cache head cover profile
+        id: cache-head
+        if: github.event_name == 'pull_request'
+        uses: actions/cache@v2
+        with:
+          path: head.profile
+          key: cover-profile-${{ hashFiles('**/*.go') }}
+      - name: Generate head cover profile
+        if: github.event_name == 'pull_request' && steps.cache-head.outputs.cache-hit != 'true'
+
+        # generate cover profile as `head.profile`
+        # example:
+        # > env:
+        # >   GOFLAGS: -cover -coverprofile=head.profile
+        # > run: make test
+
+      - name: Fetch goverdiff @main SHA-1
+        id: goverdiff-main
+        run: |
+          sha1=$(curl \
+            --header "Accept: application/vnd.github.v3+json" \
+            --silent \
+              https://api.github.com/repos/flipgroup/goverdiff/branches/main | \
+                jq --raw-output ".commit.sha")
+          echo "::set-output name=sha1::$sha1"
+      - name: Cache goverdiff
+        id: cache-goverdiff
+        uses: actions/cache@v2
+        with:
+          path: ~/go/bin/goverdiff
+          key: ${{ runner.os }}-cover-goverdiff-sha1-${{ steps.goverdiff-main.outputs.sha1 }}
+      - name: Install goverdiff
+        if: steps.cache-goverdiff.outputs.cache-hit != 'true'
+        run: go install github.com/flipgroup/goverdiff@main
+      - name: Run goverdiff
+        env:
+          GITHUB_PULL_REQUEST_ID: ${{ github.event.number }}
+          GITHUB_TOKEN: ${{ github.token }}
+        if: github.event_name == 'pull_request'
+        run: goverdiff base.profile head.profile
