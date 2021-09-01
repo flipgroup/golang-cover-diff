@@ -1,7 +1,7 @@
 name: Coverage report
 concurrency:
   cancel-in-progress: true
-  group: cover-pr-${{ github.event.number }}
+  group: cover-${{ github.ref }}
 
 on:
   pull_request:
