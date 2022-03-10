@@ -17,6 +17,8 @@ import (
 var (
 	baseCovLinkTemplate = flag.String("link-template.base", "", "template used to generate links to base commit coverage profiles. See LINK TEMPLATES")
 	headCovLinkTemplate = flag.String("link-template.head", "", "template used to generate links to head commit coverage profiles. See LINK TEMPLATES")
+
+	dryrun = flag.Bool("dry-run", false, "skip posting comment to Github, printing to stdout instead")
 )
 
 func init() {
@@ -69,10 +71,15 @@ func main() {
 	}
 
 	// generate and publish GitHub pull request message
-	createOrUpdateComment(
-		ctx,
-		summaryMessage(base.Coverage(), head.Coverage()),
-		buildTable(getModulePackageName(), base, head))
+	sum := summaryMessage(base.Coverage(), head.Coverage())
+	tab := buildTable(getModulePackageName(), base, head)
+
+	if *dryrun {
+		fmt.Println(sum)
+		fmt.Println(tab)
+	} else {
+		createOrUpdateComment(ctx, sum, tab)
+	}
 }
 
 func buildTable(rootPkgName string, base, head *CoverProfile) string {
