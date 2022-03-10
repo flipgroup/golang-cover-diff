@@ -106,4 +106,47 @@ my/package                                                                      
 `, "\n"),
 			buildTable("github.com/flipgroup/goverdiff", base, head))
 	})
+
+	t.Run("render link template", func(t *testing.T) {
+
+	})
+}
+
+func TestRenderLinkTemplate(t *testing.T) {
+	type kase struct {
+		name     string
+		tmpl     string
+		text     string
+		expected string
+	}
+	ks := []kase{
+		{
+			name:     "no template specified",
+			tmpl:     "",
+			text:     "55%",
+			expected: "55%",
+		},
+		{
+			name:     "template specified with replace token",
+			tmpl:     "https://ci.acme.com/coverprofiles/before/%[p]/coverage.html",
+			text:     "55%",
+			expected: "[55%](https://ci.acme.com/coverprofiles/before/github.com/flipgroup/goverdiff/coverage.html)",
+		},
+		{
+			name:     "template specified without replace token",
+			tmpl:     "https://ci.acme.com/coverprofiles/before/coverage.html",
+			text:     "55%",
+			expected: "[55%](https://ci.acme.com/coverprofiles/before/coverage.html)",
+		},
+	}
+
+	rep := strings.NewReplacer("%[p]", "github.com/flipgroup/goverdiff")
+	for _, k := range ks {
+		t.Run(k.name, func(t *testing.T) {
+			actual := renderLinkTemplate(k.tmpl, k.text, rep)
+			if actual != k.expected {
+				t.Errorf("expected: %s, got %s", k.expected, actual)
+			}
+		})
+	}
 }

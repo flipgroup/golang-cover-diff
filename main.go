@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	baseCovLinkTemple = flag.String("link-template.base", "", "template used to generate links to base commit coverage profiles. See LINK TEMPLATES")
-	headCovLinkTemple = flag.String("link-template.head", "", "template used to generate links to head commit coverage profiles. See LINK TEMPLATES")
+	baseCovLinkTemplate = flag.String("link-template.base", "", "template used to generate links to base commit coverage profiles. See LINK TEMPLATES")
+	headCovLinkTemplate = flag.String("link-template.head", "", "template used to generate links to head commit coverage profiles. See LINK TEMPLATES")
 )
 
 func init() {
@@ -33,19 +33,29 @@ func init() {
 		fmt.Fprintln(out, "order to generate these links pass two links templates. The")
 		fmt.Fprintln(out, "following tokens will be replaced in the template:")
 		fmt.Fprintln(out, "")
-		fmt.Fprintln(out, "\t%p -> the current go package name")
+		fmt.Fprintln(out, "\t%[p] -> the current go package name")
 		fmt.Fprintln(out, "")
 		fmt.Fprintln(out, "Example")
 		fmt.Fprintln(out, "$ goverdiff \\")
-		fmt.Fprintln(out, "\t-link-template.base 'https://ci.acme.com/coverprofiles/before/%p/coverage.html' \\")
-		fmt.Fprintln(out, "\t-link-template.head 'https://ci.acme.com/coverprofiles/after/%p/coverage.html' \\")
+		fmt.Fprintln(out, "\t-link-template.base 'https://ci.acme.com/coverprofiles/before/%[p]/coverage.html' \\")
+		fmt.Fprintln(out, "\t-link-template.head 'https://ci.acme.com/coverprofiles/after/%[p]/coverage.html' \\")
 		fmt.Fprintln(out, "\t base/coverage.out head/coverage.out")
 	}
-
 }
+
 func main() {
 	ctx := context.Background()
 	flag.Parse()
+
+	if *baseCovLinkTemplate != "" {
+		if *headCovLinkTemplate == "" {
+			fmt.Fprintln(os.Stderr, "fatal: expected link-template.head option to not be empty")
+			os.Exit(1)
+		}
+	} else if *headCovLinkTemplate != "" {
+		fmt.Fprintln(os.Stderr, "fatal: expected link-template.base option to not be empty")
+		os.Exit(1)
+	}
 
 	// load given base and head `go test` cover profiles from disk
 	base, err := LoadCoverProfile(flag.Arg(0))
@@ -78,10 +88,12 @@ func buildTable(rootPkgName string, base, head *CoverProfile) string {
 	for _, pkgName := range getAllPackages(base, head) {
 		baseCov := base.Packages[pkgName].Coverage()
 		headCov := head.Packages[pkgName].Coverage()
+		relPkg := relativePackage(rootPkgName, pkgName)
+		templateReplacer := strings.NewReplacer("%[p]", relPkg)
 		buf.WriteString(fmt.Sprintf(tableRowSprintf,
-			relativePackage(rootPkgName, pkgName),
-			coverageDescription(baseCov),
-			coverageDescription(headCov),
+			relPkg,
+			renderLinkTemplate(*baseCovLinkTemplate, coverageDescription(baseCov), templateReplacer),
+			renderLinkTemplate(*headCovLinkTemplate, coverageDescription(headCov), templateReplacer),
 			diffDescription(baseCov, headCov)))
 	}
 
@@ -246,4 +258,11 @@ func getAllPackages(profiles ...*CoverProfile) []string {
 		return res[i] < res[j]
 	})
 	return res
+}
+
+func renderLinkTemplate(tmpl, text string, rep *strings.Replacer) string {
+	if tmpl == "" {
+		return text
+	}
+	return fmt.Sprintf("[%s](%s)", text, rep.Replace(tmpl))
 }
