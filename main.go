@@ -88,8 +88,8 @@ func buildTable(rootPkgName string, base, head *CoverProfile) string {
 
 	// write report header
 	var buf strings.Builder
-	buf.WriteString(fmt.Sprintf(tableRowSprintf, "|package|", "|before|", "|after|", "|delta|"))
-	buf.WriteString(fmt.Sprintf(tableRowSprintf, "|-------|", "|------|", "|-----|", "|-----|"))
+	buf.WriteString(fmt.Sprintf(tableRowSprintf, "package", "before", "after", "delta"))
+	buf.WriteString(fmt.Sprintf(tableRowSprintf, "-------", "------", "-----", "-----"))
 
 	// write package lines
 	for _, pkgName := range getAllPackages(base, head) {
