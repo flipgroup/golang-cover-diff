@@ -268,7 +268,7 @@ func getAllPackages(profiles ...*CoverProfile) []string {
 }
 
 func renderLinkTemplate(tmpl, text string, rep *strings.Replacer) string {
-	if tmpl == "" {
+	if tmpl == "" || text == "-" {
 		return text
 	}
 	return fmt.Sprintf("[%s](%s)", text, rep.Replace(tmpl))

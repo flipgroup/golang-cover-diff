@@ -138,6 +138,12 @@ func TestRenderLinkTemplate(t *testing.T) {
 			text:     "55%",
 			expected: "[55%](https://ci.acme.com/coverprofiles/before/coverage.html)",
 		},
+		{
+			name:     "template specified without text",
+			tmpl:     "https://ci.acme.com/coverprofiles/before/coverage.html",
+			text:     "-",
+			expected: "-",
+		},
 	}
 
 	rep := strings.NewReplacer("%[p]", "github.com/flipgroup/goverdiff")
