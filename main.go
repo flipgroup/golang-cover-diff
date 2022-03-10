@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 	"regexp"
@@ -13,16 +14,46 @@ import (
 	"golang.org/x/oauth2"
 )
 
+var (
+	baseCovLinkTemple = flag.String("link-template.base", "", "template used to generate links to base commit coverage profiles. See LINK TEMPLATES")
+	headCovLinkTemple = flag.String("link-template.head", "", "template used to generate links to head commit coverage profiles. See LINK TEMPLATES")
+)
+
+func init() {
+	flag.Usage = func() {
+		out := flag.CommandLine.Output()
+		fmt.Fprintf(out, "Usage: %s [OPTIONS] <base-profile> <head-profile>\n", os.Args[0])
+
+		fmt.Fprintln(out, "\nOPTIONS")
+		flag.PrintDefaults()
+
+		fmt.Fprintln(out, "\nLINK TEMPLATES")
+		fmt.Fprintln(out, "In the comment posted to Github PR can optionally include links to")
+		fmt.Fprintln(out, "the html version of the cover profile with color coded lines. In")
+		fmt.Fprintln(out, "order to generate these links pass two links templates. The")
+		fmt.Fprintln(out, "following tokens will be replaced in the template:")
+		fmt.Fprintln(out, "")
+		fmt.Fprintln(out, "\t%p -> the current go package name")
+		fmt.Fprintln(out, "")
+		fmt.Fprintln(out, "Example")
+		fmt.Fprintln(out, "$ goverdiff \\")
+		fmt.Fprintln(out, "\t-link-template.base 'https://ci.acme.com/coverprofiles/before/%p/coverage.html' \\")
+		fmt.Fprintln(out, "\t-link-template.head 'https://ci.acme.com/coverprofiles/after/%p/coverage.html' \\")
+		fmt.Fprintln(out, "\t base/coverage.out head/coverage.out")
+	}
+
+}
 func main() {
 	ctx := context.Background()
+	flag.Parse()
 
 	// load given base and head `go test` cover profiles from disk
-	base, err := LoadCoverProfile(os.Args[1])
+	base, err := LoadCoverProfile(flag.Arg(0))
 	if err != nil {
 		panic(err)
 	}
 
-	head, err := LoadCoverProfile(os.Args[2])
+	head, err := LoadCoverProfile(flag.Arg(1))
 	if err != nil {
 		panic(err)
 	}
