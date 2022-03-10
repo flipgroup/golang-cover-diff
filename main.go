@@ -83,13 +83,13 @@ func main() {
 }
 
 func buildTable(rootPkgName string, base, head *CoverProfile) string {
-	const tableRowSprintf = "%-80s %8s %8s %8s\n"
+	const tableRowSprintf = "|%-80s|%8s|%8s|%8s|\n"
 	rootPkgName += "/"
 
 	// write report header
 	var buf strings.Builder
-	buf.WriteString(fmt.Sprintf(tableRowSprintf, "package", "before", "after", "delta"))
-	buf.WriteString(fmt.Sprintf(tableRowSprintf, "-------", "------", "-----", "-----"))
+	buf.WriteString(fmt.Sprintf(tableRowSprintf, "|package|", "|before|", "|after|", "|delta|"))
+	buf.WriteString(fmt.Sprintf(tableRowSprintf, "|-------|", "|------|", "|-----|", "|-----|"))
 
 	// write package lines
 	for _, pkgName := range getAllPackages(base, head) {
@@ -105,7 +105,7 @@ func buildTable(rootPkgName string, base, head *CoverProfile) string {
 	}
 
 	// write totals
-	buf.WriteString(fmt.Sprintf("%80s %8s %8s %8s\n",
+	buf.WriteString(fmt.Sprintf("|%80s|%8s|%8s|%8s|\n",
 		"total:",
 		coverageDescription(base.Coverage()),
 		coverageDescription(head.Coverage()),
