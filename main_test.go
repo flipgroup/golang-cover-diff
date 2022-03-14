@@ -33,9 +33,9 @@ func TestBuildTable(t *testing.T) {
 		head := &CoverProfile{}
 
 		assert.Equal(t, strings.TrimLeft(`
-package                                                                            before    after    delta
--------                                                                            ------    -----    -----
-                                                                          total:        -        -      n/a
+|package                                                                         |  before|   after|   delta|
+|-------                                                                         |  ------|   -----|   -----|
+|                                                                          total:|       -|       -|     n/a|
 `, "\n"),
 			buildTable("", base, head))
 	})
@@ -58,10 +58,10 @@ package                                                                         
 		}
 
 		assert.Equal(t, strings.TrimLeft(`
-package                                                                            before    after    delta
--------                                                                            ------    -----    -----
-my/package                                                                         37.50%        -     gone
-                                                                          total:   33.33%   41.25%   +7.92%
+|package                                                                         |  before|   after|   delta|
+|-------                                                                         |  ------|   -----|   -----|
+|my/package                                                                      |  37.50%|       -|    gone|
+|                                                                          total:|  33.33%|  41.25%|  +7.92%|
 `, "\n"),
 			buildTable("github.com/flipgroup/goverdiff", base, head))
 	})
@@ -98,17 +98,13 @@ my/package                                                                      
 		}
 
 		assert.Equal(t, strings.TrimLeft(`
-package                                                                            before    after    delta
--------                                                                            ------    -----    -----
-apples                                                                             32.69%   32.69%   +0.00%
-my/package                                                                         37.50%   57.14%  +19.64%
-                                                                          total:   33.33%   41.25%   +7.92%
+|package                                                                         |  before|   after|   delta|
+|-------                                                                         |  ------|   -----|   -----|
+|apples                                                                          |  32.69%|  32.69%|  +0.00%|
+|my/package                                                                      |  37.50%|  57.14%| +19.64%|
+|                                                                          total:|  33.33%|  41.25%|  +7.92%|
 `, "\n"),
 			buildTable("github.com/flipgroup/goverdiff", base, head))
-	})
-
-	t.Run("render link template", func(t *testing.T) {
-
 	})
 }
 
