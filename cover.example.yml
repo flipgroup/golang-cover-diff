@@ -32,7 +32,7 @@ jobs:
           version: ~1.17
       - name: Generate Golang source hash base
         id: hash-base
-        run: echo "::set-output name=value::${{ hashFiles('**/*.go') }}"
+        run: echo "::set-output name=value::${{ hashFiles('**/*.go','!vendor/**') }}"
       - name: Cache base cover profile
         id: cache-base
         uses: actions/cache@v3
@@ -56,7 +56,7 @@ jobs:
       - name: Generate Golang source hash head
         if: github.event_name == 'pull_request'
         id: hash-head
-        run: echo "::set-output name=value::${{ hashFiles('**/*.go') }}"
+        run: echo "::set-output name=value::${{ hashFiles('**/*.go','!vendor/**') }}"
       - name: Cache head cover profile
         if: |
           github.event_name == 'pull_request' &&
