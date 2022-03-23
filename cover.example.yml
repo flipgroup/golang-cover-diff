@@ -32,10 +32,10 @@ jobs:
           version: ~1.17
       - name: Generate Golang source hash base
         id: hash-base
-        run: echo "::set-output name=value::${{ hashFiles('**/*.go') }}"
+        run: echo "::set-output name=value::${{ hashFiles('**/*.go','!vendor/**') }}"
       - name: Cache base cover profile
         id: cache-base
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: cover-${{ steps.hash-base.outputs.value }}.profile
           key: cover-profile-${{ steps.hash-base.outputs.value }}
@@ -56,13 +56,13 @@ jobs:
       - name: Generate Golang source hash head
         if: github.event_name == 'pull_request'
         id: hash-head
-        run: echo "::set-output name=value::${{ hashFiles('**/*.go') }}"
+        run: echo "::set-output name=value::${{ hashFiles('**/*.go','!vendor/**') }}"
       - name: Cache head cover profile
         if: |
           github.event_name == 'pull_request' &&
           steps.hash-base.outputs.value != steps.hash-head.outputs.value
         id: cache-head
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: cover-${{ steps.hash-head.outputs.value }}.profile
           key: cover-profile-${{ steps.hash-head.outputs.value }}
@@ -89,7 +89,7 @@ jobs:
           echo "::set-output name=sha1::$sha1"
       - name: Cache goverdiff
         id: cache-goverdiff
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/go/bin/goverdiff
           key: ${{ runner.os }}-cover-goverdiff-sha1-${{ steps.goverdiff-main.outputs.sha1 }}
