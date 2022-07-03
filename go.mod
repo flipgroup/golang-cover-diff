@@ -1,4 +1,4 @@
-module github.com/flipgroup/goverdiff
+module github.com/flipgroup/golang-cover-diff
 
 go 1.17
 

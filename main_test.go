@@ -8,11 +8,11 @@ import (
 )
 
 func TestModulePackageName(t *testing.T) {
-	assert.Equal(t, "github.com/flipgroup/goverdiff", getModulePackageName())
+	assert.Equal(t, "github.com/flipgroup/golang-cover-diff", getModulePackageName())
 }
 
 func TestRelativePackage(t *testing.T) {
-	const rootPkgName = "github.com/flipgroup/goverdiff/"
+	const rootPkgName = "github.com/flipgroup/golang-cover-diff/"
 
 	assert.Equal(t,
 		"my/cool/package",
@@ -20,11 +20,11 @@ func TestRelativePackage(t *testing.T) {
 
 	assert.Equal(t,
 		"my/cool/package",
-		relativePackage(rootPkgName, "github.com/flipgroup/goverdiff/my/cool/package"))
+		relativePackage(rootPkgName, "github.com/flipgroup/golang-cover-diff/my/cool/package"))
 
 	assert.Equal(t,
 		"my/cool/package/with/a/stupidly/log/package/path/name/keep/going/on/going/plus/s",
-		relativePackage(rootPkgName, "github.com/flipgroup/goverdiff/my/cool/package/with/a/stupidly/log/package/path/name/keep/going/on/going/plus/some/more/oh/my/when/will/this/end"))
+		relativePackage(rootPkgName, "github.com/flipgroup/golang-cover-diff/my/cool/package/with/a/stupidly/log/package/path/name/keep/going/on/going/plus/some/more/oh/my/when/will/this/end"))
 }
 
 func TestBuildTable(t *testing.T) {
@@ -45,7 +45,7 @@ package                                                                         
 			Total:   60,
 			Covered: 20,
 			Packages: map[string]*Package{
-				"github.com/flipgroup/goverdiff/my/package": {
+				"github.com/flipgroup/golang-cover-diff/my/package": {
 					Total:   8,
 					Covered: 3,
 				},
@@ -63,7 +63,7 @@ package                                                                         
 my/package                                                                         37.50%        -     gone
                                                                           total:   33.33%   41.25%   +7.92%
 `, "\n"),
-			buildTable("github.com/flipgroup/goverdiff", base, head))
+			buildTable("github.com/flipgroup/golang-cover-diff", base, head))
 	})
 
 	t.Run("package data both sides", func(t *testing.T) {
@@ -71,11 +71,11 @@ my/package                                                                      
 			Total:   60,
 			Covered: 20,
 			Packages: map[string]*Package{
-				"github.com/flipgroup/goverdiff/my/package": {
+				"github.com/flipgroup/golang-cover-diff/my/package": {
 					Total:   8,
 					Covered: 3,
 				},
-				"github.com/flipgroup/goverdiff/apples": {
+				"github.com/flipgroup/golang-cover-diff/apples": {
 					Total:   52,
 					Covered: 17,
 				},
@@ -86,11 +86,11 @@ my/package                                                                      
 			Total:   80,
 			Covered: 33,
 			Packages: map[string]*Package{
-				"github.com/flipgroup/goverdiff/my/package": {
+				"github.com/flipgroup/golang-cover-diff/my/package": {
 					Total:   28,
 					Covered: 16,
 				},
-				"github.com/flipgroup/goverdiff/apples": {
+				"github.com/flipgroup/golang-cover-diff/apples": {
 					Total:   52,
 					Covered: 17,
 				},
@@ -104,6 +104,6 @@ apples                                                                          
 my/package                                                                         37.50%   57.14%  +19.64%
                                                                           total:   33.33%   41.25%   +7.92%
 `, "\n"),
-			buildTable("github.com/flipgroup/goverdiff", base, head))
+			buildTable("github.com/flipgroup/golang-cover-diff", base, head))
 	})
 }
