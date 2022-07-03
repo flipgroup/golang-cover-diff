@@ -66,7 +66,7 @@ func buildTable(rootPkgName string, base, head *CoverProfile) string {
 }
 
 func createOrUpdateComment(ctx context.Context, title, details string) {
-	const coverageReportHeaderMarkdown = "# Golang test coverage diff report"
+	const coverageReportHeaderMarkdown = "<!-- info:golang-cover-diff -->\n# Golang test coverage difference report"
 
 	auth_token := os.Getenv("GITHUB_TOKEN")
 	if auth_token == "" {
