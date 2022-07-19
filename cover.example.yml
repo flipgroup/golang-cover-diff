@@ -28,7 +28,7 @@ jobs:
       - name: Setup Golang with cache
         uses: flipgroup/action-golang-with-cache@main
         with:
-          version: ~1.17
+          version-file: go.mod
       - name: Generate Golang source hash base
         id: hash-base
         run: echo "::set-output name=value::${{ hashFiles('**/*.go','!vendor/**') }}"
