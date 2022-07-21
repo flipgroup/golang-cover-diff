@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/go-github/v38/github"
+	"github.com/google/go-github/v45/github"
 	"golang.org/x/oauth2"
 )
 
@@ -35,13 +35,13 @@ func main() {
 }
 
 func buildTable(rootPkgName string, base, head *CoverProfile) string {
-	const tableRowSprintf = "%-80s %8s %8s %8s\n"
+	const tableRowSprintf = "%-80s  %7s  %7s  %7s\n"
 	rootPkgName += "/"
 
 	// write report header
 	var buf strings.Builder
 	buf.WriteString(fmt.Sprintf(tableRowSprintf, "package", "before", "after", "delta"))
-	buf.WriteString(fmt.Sprintf(tableRowSprintf, "-------", "------", "-----", "-----"))
+	buf.WriteString(fmt.Sprintf(tableRowSprintf, "-------", "-------", "-------", "-------"))
 
 	// write package lines
 	for _, pkgName := range getAllPackages(base, head) {
@@ -66,7 +66,7 @@ func buildTable(rootPkgName string, base, head *CoverProfile) string {
 }
 
 func createOrUpdateComment(ctx context.Context, title, details string) {
-	const coverageReportHeaderMarkdown = "# Golang test coverage diff report"
+	const coverageReportHeaderMarkdown = "<!-- info:golang-cover-diff -->\n# Golang test coverage difference report"
 
 	auth_token := os.Getenv("GITHUB_TOKEN")
 	if auth_token == "" {

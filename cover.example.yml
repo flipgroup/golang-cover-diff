@@ -15,7 +15,6 @@ jobs:
     if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
-
       # required bootstrap steps (e.g. Docker package registry login, additional packages)
 
       - name: Checkout source
@@ -29,7 +28,7 @@ jobs:
       - name: Setup Golang with cache
         uses: flipgroup/action-golang-with-cache@main
         with:
-          version: ~1.17
+          version-file: go.mod
       - name: Generate Golang source hash base
         id: hash-base
         run: echo "::set-output name=value::${{ hashFiles('**/*.go','!vendor/**') }}"
@@ -78,30 +77,30 @@ jobs:
         # >   GOFLAGS: -cover -coverprofile=cover-${{ steps.hash-head.outputs.value }}.profile
         # > run: make test
 
-      - name: Fetch goverdiff @main SHA-1
-        id: goverdiff-main
+      - name: Fetch golang-cover-diff @main SHA-1
+        id: golang-cover-diff-main
         run: |
           sha1=$(curl \
             --header "Accept: application/vnd.github.v3+json" \
             --silent \
-              https://api.github.com/repos/flipgroup/goverdiff/branches/main | \
+              https://api.github.com/repos/flipgroup/golang-cover-diff/branches/main | \
                 jq --raw-output ".commit.sha")
           echo "::set-output name=sha1::$sha1"
-      - name: Cache goverdiff
-        id: cache-goverdiff
+      - name: Cache golang-cover-diff
+        id: cache-golang-cover-diff
         uses: actions/cache@v3
         with:
-          path: ~/go/bin/goverdiff
-          key: ${{ runner.os }}-cover-goverdiff-sha1-${{ steps.goverdiff-main.outputs.sha1 }}
-      - name: Install goverdiff
-        if: steps.cache-goverdiff.outputs.cache-hit != 'true'
-        run: go install github.com/flipgroup/goverdiff@main
-      - name: Run goverdiff
+          path: ~/go/bin/golang-cover-diff
+          key: ${{ runner.os }}-golang-cover-diff-sha1-${{ steps.golang-cover-diff-main.outputs.sha1 }}
+      - name: Install golang-cover-diff
+        if: steps.cache-golang-cover-diff.outputs.cache-hit != 'true'
+        run: go install github.com/flipgroup/golang-cover-diff@main
+      - name: Run golang-cover-diff
         if: github.event_name == 'pull_request'
         env:
           GITHUB_PULL_REQUEST_ID: ${{ github.event.number }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          goverdiff \
+          golang-cover-diff \
             cover-${{ steps.hash-base.outputs.value }}.profile \
             cover-${{ steps.hash-head.outputs.value }}.profile
