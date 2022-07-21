@@ -32,7 +32,7 @@ func TestBuildTable(t *testing.T) {
 		base := &CoverProfile{}
 		head := &CoverProfile{}
 
-		assert.Equal(t, strings.TrimLeft(`
+		assert.Equal(t, strings.Trim(`
 package                                                                            before    after    delta
 -------                                                                           -------  -------  -------
                                                                           total:        -        -      n/a
@@ -57,7 +57,7 @@ package                                                                         
 			Covered: 33,
 		}
 
-		assert.Equal(t, strings.TrimLeft(`
+		assert.Equal(t, strings.Trim(`
 package                                                                            before    after    delta
 -------                                                                           -------  -------  -------
 my/package                                                                         37.50%        -     gone
@@ -97,7 +97,7 @@ my/package                                                                      
 			},
 		}
 
-		assert.Equal(t, strings.TrimLeft(`
+		assert.Equal(t, strings.Trim(`
 package                                                                            before    after    delta
 -------                                                                           -------  -------  -------
 apples                                                                             32.69%   32.69%   +0.00%
