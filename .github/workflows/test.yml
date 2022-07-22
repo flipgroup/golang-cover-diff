@@ -16,7 +16,7 @@ jobs:
       - name: Setup Golang with lint
         uses: flipgroup/action-golang-with-lint@main
         with:
-          version-golang: ~1.17
-          version-golangci-lint: v1.44.2
+          version-golang-file: go.mod
+          version-golangci-lint: v1.47.0
       - name: Test
         run: go test -count=1 -v ./...
