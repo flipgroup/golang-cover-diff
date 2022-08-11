@@ -66,7 +66,7 @@ func buildTable(rootPkgName string, base, head *CoverProfile) string {
 }
 
 func createOrUpdateComment(ctx context.Context, title, details string) {
-	const coverageReportHeaderMarkdown = "<!-- info:golang-cover-diff -->"
+	const commentMarker = "<!-- info:golang-cover-diff -->"
 
 	auth_token := os.Getenv("GITHUB_TOKEN")
 	if auth_token == "" {
@@ -109,7 +109,7 @@ func createOrUpdateComment(ctx context.Context, title, details string) {
 
 	// iterate over existing pull request comments - if existing coverage comment found then update
 	body := fmt.Sprintf("%s\n%s\n%s\n\n```\n%s\n```\n",
-		coverageReportHeaderMarkdown,
+		commentMarker,
 		"# Golang test coverage difference report",
 		title, details)
 
@@ -119,12 +119,12 @@ func createOrUpdateComment(ctx context.Context, title, details string) {
 		}
 
 		if *c.Body == body {
-			// existing comment body is the same - no change required
+			// existing comment body is identical - no change
 			return
 		}
 
-		if strings.HasPrefix(*c.Body, coverageReportHeaderMarkdown) {
-			// found existing cover comment - update
+		if strings.HasPrefix(*c.Body, commentMarker) {
+			// found existing coverage comment - update
 			_, _, err = client.Issues.EditComment(ctx, owner, repo, *c.ID, &github.IssueComment{
 				Body: &body,
 			})
@@ -135,7 +135,7 @@ func createOrUpdateComment(ctx context.Context, title, details string) {
 		}
 	}
 
-	// no coverage comment found - create new comment
+	// no coverage comment found - create
 	_, _, err = client.Issues.CreateComment(ctx, owner, repo, prNum, &github.IssueComment{
 		Body: &body,
 	})

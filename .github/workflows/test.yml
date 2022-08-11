@@ -17,6 +17,6 @@ jobs:
         uses: flipgroup/action-golang-with-lint@main
         with:
           version-golang-file: go.mod
-          version-golangci-lint: v1.47.0
+          version-golangci-lint: v1.47.3
       - name: Test
         run: go test -count=1 -v ./...

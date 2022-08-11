@@ -6,6 +6,7 @@ linters:
     - errname
     - exhaustive
     - exportloopref
+    - gci
     - goconst
     - godot
     - goimports
