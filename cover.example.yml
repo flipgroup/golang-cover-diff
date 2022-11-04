@@ -37,7 +37,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: cover-${{ steps.hash-base.outputs.value }}.profile
-          key: cover-profile-${{ steps.hash-base.outputs.value }}
+          key: golang-cover-profile-${{ steps.hash-base.outputs.value }}
       - name: Generate base cover profile
         if: steps.cache-base.outputs.cache-hit != 'true'
 
@@ -64,7 +64,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: cover-${{ steps.hash-head.outputs.value }}.profile
-          key: cover-profile-${{ steps.hash-head.outputs.value }}
+          key: golang-cover-profile-${{ steps.hash-head.outputs.value }}
       - name: Generate head cover profile
         if: |
           github.event_name == 'pull_request' &&
