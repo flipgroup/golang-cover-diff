@@ -9,7 +9,7 @@ linters:
     - gci
     - goconst
     - godot
-    - goimports
+    - gofmt
     - unconvert
     - whitespace
 
@@ -22,3 +22,7 @@ linters-settings:
   goconst:
     min-len: 2
     min-occurrences: 2
+  gofmt:
+    rewrite-rules:
+      - pattern: interface{}
+        replacement: any
