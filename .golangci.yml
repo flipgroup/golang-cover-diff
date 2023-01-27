@@ -26,3 +26,8 @@ linters-settings:
     rewrite-rules:
       - pattern: interface{}
         replacement: any
+  govet:
+    enable-all: true
+    disable:
+      - fieldalignment
+      - shadow
