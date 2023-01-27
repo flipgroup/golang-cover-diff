@@ -1,5 +1,5 @@
 run:
-  timeout: 2m
+  timeout: 5m
 
 linters:
   enable:
@@ -26,3 +26,8 @@ linters-settings:
     rewrite-rules:
       - pattern: interface{}
         replacement: any
+  govet:
+    enable-all: true
+    disable:
+      - fieldalignment
+      - shadow
