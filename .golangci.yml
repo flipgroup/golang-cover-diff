@@ -11,6 +11,7 @@ linters:
     - godot
     - gofmt
     - unconvert
+    - unparam
     - whitespace
 
 linters-settings:
