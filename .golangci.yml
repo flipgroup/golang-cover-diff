@@ -10,6 +10,7 @@ linters:
     - goconst
     - godot
     - gofmt
+    - makezero
     - unconvert
     - unparam
     - whitespace
@@ -32,3 +33,5 @@ linters-settings:
     disable:
       - fieldalignment
       - shadow
+  makezero:
+    always: false
