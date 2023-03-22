@@ -44,7 +44,7 @@ jobs:
         # generate base cover profile
         # example:
         # > env:
-        # >   GOFLAGS: -cover -coverprofile=cover-${{ steps.hash-base.outputs.value }}.profile
+        # >   GOFLAGS: -coverprofile=cover-${{ steps.hash-base.outputs.value }}.profile
         # > run: make test
 
       - name: Checkout source
@@ -74,7 +74,7 @@ jobs:
         # generate head cover profile
         # example:
         # > env:
-        # >   GOFLAGS: -cover -coverprofile=cover-${{ steps.hash-head.outputs.value }}.profile
+        # >   GOFLAGS: -coverprofile=cover-${{ steps.hash-head.outputs.value }}.profile
         # > run: make test
 
       - name: Fetch golang-cover-diff @main SHA-1
