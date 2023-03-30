@@ -31,7 +31,7 @@ func main() {
 	createOrUpdateComment(
 		ctx,
 		summaryMessage(base.Coverage(), head.Coverage()),
-		buildTable(getModulePackageName(), base, head))
+		buildTable(getModuleName(), base, head))
 }
 
 func buildTable(rootPkgName string, base, head *CoverProfile) string {
@@ -186,14 +186,14 @@ func summaryMessage(base, head int) string {
 	return fmt.Sprintf("Coverage increased by `%.2f%%`. :medal_sports: Keep it up :medal_sports:", float64(head-base)/100)
 }
 
-func getModulePackageName() string {
+func getModuleName() string {
 	f, err := os.ReadFile("go.mod")
 	if err != nil {
 		// unable to determine package name
 		return ""
 	}
 
-	// found it, stop searching
+	// opened file - locate `module` line to extract full package name
 	modRegex := regexp.MustCompile(`module +([^\s]+)`)
 	return string(modRegex.FindSubmatch(f)[1])
 }

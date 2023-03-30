@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestModulePackageName(t *testing.T) {
-	assert.Equal(t, "github.com/flipgroup/golang-cover-diff", getModulePackageName())
+func TestModuleName(t *testing.T) {
+	assert.Equal(t, "github.com/flipgroup/golang-cover-diff", getModuleName())
 }
 
 func TestRelativePackage(t *testing.T) {
