@@ -8,7 +8,7 @@ import (
 )
 
 func TestModuleName(t *testing.T) {
-	assert.Equal(t, "github.com/flipgroup/golang-cover-diff", getModuleName())
+	assert.Equal(t, "github.com/flipgroup/golang-cover-diff", moduleName())
 }
 
 func TestRelativePackage(t *testing.T) {

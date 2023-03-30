@@ -31,7 +31,7 @@ func main() {
 	createOrUpdateComment(
 		ctx,
 		summaryMessage(base.Coverage(), head.Coverage()),
-		buildTable(getModuleName(), base, head))
+		buildTable(moduleName(), base, head))
 }
 
 func buildTable(rootPkgName string, base, head *CoverProfile) string {
@@ -44,7 +44,7 @@ func buildTable(rootPkgName string, base, head *CoverProfile) string {
 	buf.WriteString(fmt.Sprintf(tableRowSprintf, "-------", "-------", "-------", "-------"))
 
 	// write package lines
-	for _, pkgName := range getAllPackages(base, head) {
+	for _, pkgName := range allPackages(base, head) {
 		baseCov := base.Packages[pkgName].Coverage()
 		headCov := head.Packages[pkgName].Coverage()
 		buf.WriteString(fmt.Sprintf(tableRowSprintf,
@@ -189,7 +189,7 @@ func summaryMessage(base, head int) string {
 	return fmt.Sprintf("Coverage increased by `%.2f%%`. :medal_sports: Keep it up :medal_sports:", float64(head-base)/100)
 }
 
-func getModuleName() string {
+func moduleName() string {
 	f, err := os.ReadFile("go.mod")
 	if err != nil {
 		// unable to determine package name
@@ -201,7 +201,7 @@ func getModuleName() string {
 	return string(modRegex.FindSubmatch(f)[1])
 }
 
-func getAllPackages(profiles ...*CoverProfile) []string {
+func allPackages(profiles ...*CoverProfile) []string {
 	set := map[string]struct{}{}
 	for _, profile := range profiles {
 		for name := range profile.Packages {
