@@ -51,7 +51,7 @@ func buildTable(rootPkgName string, base, head *CoverProfile) string {
 			relativePackage(rootPkgName, pkgName),
 			coverageDescription(baseCov),
 			coverageDescription(headCov),
-			diffDescription(baseCov, headCov)))
+			diffDescription(baseCov, headCov, true)))
 	}
 
 	// write totals
@@ -59,7 +59,7 @@ func buildTable(rootPkgName string, base, head *CoverProfile) string {
 		"total:",
 		coverageDescription(base.Coverage()),
 		coverageDescription(head.Coverage()),
-		diffDescription(base.Coverage(), head.Coverage()),
+		diffDescription(base.Coverage(), head.Coverage(), false),
 	))
 
 	return buf.String()
@@ -70,7 +70,7 @@ func createOrUpdateComment(ctx context.Context, title, details string) {
 
 	auth_token := os.Getenv("GITHUB_TOKEN")
 	if auth_token == "" {
-		fmt.Println("no GITHUB_TOKEN, unable to report back to GitHub pull request.")
+		fmt.Println("no GITHUB_TOKEN, not reporting to GitHub.")
 		return
 	}
 
@@ -160,7 +160,7 @@ func coverageDescription(coverage int) string {
 	return fmt.Sprintf("%6.2f%%", float64(coverage)/100)
 }
 
-func diffDescription(base, head int) string {
+func diffDescription(base, head int, emptyNoDiff bool) string {
 	if base < 0 && head < 0 {
 		return "n/a"
 	}
@@ -169,6 +169,9 @@ func diffDescription(base, head int) string {
 	}
 	if head < 0 {
 		return "gone"
+	}
+	if base == head && emptyNoDiff {
+		return ""
 	}
 
 	return fmt.Sprintf("%+6.2f%%", float64(head-base)/100)

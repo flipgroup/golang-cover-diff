@@ -128,14 +128,17 @@ func TestMessaging(t *testing.T) {
 	})
 
 	t.Run("diffDescription()", func(t *testing.T) {
-		assert.Equal(t, "n/a", diffDescription(-1, -1))
-		assert.Equal(t, "new", diffDescription(-1, 100))
-		assert.Equal(t, "gone", diffDescription(100, -1))
+		assert.Equal(t, "n/a", diffDescription(-1, -1, false))
+		assert.Equal(t, "new", diffDescription(-1, 100, false))
+		assert.Equal(t, "gone", diffDescription(100, -1, false))
 
-		assert.Equal(t, " +0.05%", diffDescription(100, 105))
-		assert.Equal(t, " -0.05%", diffDescription(105, 100))
-		assert.Equal(t, " +1.05%", diffDescription(100, 205))
-		assert.Equal(t, " -1.05%", diffDescription(205, 100))
+		assert.Equal(t, " +0.05%", diffDescription(100, 105, false))
+		assert.Equal(t, " -0.05%", diffDescription(105, 100, false))
+		assert.Equal(t, " +1.05%", diffDescription(100, 205, false))
+		assert.Equal(t, " -1.05%", diffDescription(205, 100, false))
+
+		assert.Equal(t, " +0.00%", diffDescription(100, 100, false))
+		assert.Equal(t, "", diffDescription(100, 100, true))
 	})
 
 	t.Run("summaryMessage()", func(t *testing.T) {

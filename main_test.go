@@ -97,13 +97,14 @@ my/package                                                                      
 			},
 		}
 
-		assert.Equal(t, strings.Trim(`
+		// note: using `$-$` marker to defeat removal of trailing space from `.editorconfig` settings
+		assert.Equal(t, strings.ReplaceAll(strings.Trim(`
 package                                                                            before    after    delta
 -------                                                                           -------  -------  -------
-apples                                                                             32.69%   32.69%   +0.00%
+apples                                                                             32.69%   32.69%      $-$
 my/package                                                                         37.50%   57.14%  +19.64%
                                                                           total:   33.33%   41.25%   +7.92%
-`, "\n"),
+`, "\n"), "$-$", "   "),
 			buildTable("github.com/flipgroup/golang-cover-diff", base, head))
 	})
 }
