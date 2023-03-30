@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/google/go-github/v45 v45.2.0
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.2
 	golang.org/x/oauth2 v0.0.0-20210323180902-22b0adad7558
 )
 

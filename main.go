@@ -31,7 +31,7 @@ func main() {
 	createOrUpdateComment(
 		ctx,
 		summaryMessage(base.Coverage(), head.Coverage()),
-		buildTable(getModulePackageName(), base, head))
+		buildTable(moduleName(), base, head))
 }
 
 func buildTable(rootPkgName string, base, head *CoverProfile) string {
@@ -44,14 +44,14 @@ func buildTable(rootPkgName string, base, head *CoverProfile) string {
 	buf.WriteString(fmt.Sprintf(tableRowSprintf, "-------", "-------", "-------", "-------"))
 
 	// write package lines
-	for _, pkgName := range getAllPackages(base, head) {
+	for _, pkgName := range allPackages(base, head) {
 		baseCov := base.Packages[pkgName].Coverage()
 		headCov := head.Packages[pkgName].Coverage()
 		buf.WriteString(fmt.Sprintf(tableRowSprintf,
 			relativePackage(rootPkgName, pkgName),
 			coverageDescription(baseCov),
 			coverageDescription(headCov),
-			diffDescription(baseCov, headCov)))
+			diffDescription(baseCov, headCov, true)))
 	}
 
 	// write totals
@@ -59,7 +59,7 @@ func buildTable(rootPkgName string, base, head *CoverProfile) string {
 		"total:",
 		coverageDescription(base.Coverage()),
 		coverageDescription(head.Coverage()),
-		diffDescription(base.Coverage(), head.Coverage()),
+		diffDescription(base.Coverage(), head.Coverage(), false),
 	))
 
 	return buf.String()
@@ -70,7 +70,7 @@ func createOrUpdateComment(ctx context.Context, title, details string) {
 
 	auth_token := os.Getenv("GITHUB_TOKEN")
 	if auth_token == "" {
-		fmt.Println("no GITHUB_TOKEN, unable to report back to GitHub pull request.")
+		fmt.Println("no GITHUB_TOKEN, not reporting to GitHub.")
 		return
 	}
 
@@ -160,7 +160,7 @@ func coverageDescription(coverage int) string {
 	return fmt.Sprintf("%6.2f%%", float64(coverage)/100)
 }
 
-func diffDescription(base, head int) string {
+func diffDescription(base, head int, emptyNoDiff bool) string {
 	if base < 0 && head < 0 {
 		return "n/a"
 	}
@@ -169,6 +169,9 @@ func diffDescription(base, head int) string {
 	}
 	if head < 0 {
 		return "gone"
+	}
+	if base == head && emptyNoDiff {
+		return ""
 	}
 
 	return fmt.Sprintf("%+6.2f%%", float64(head-base)/100)
@@ -186,19 +189,19 @@ func summaryMessage(base, head int) string {
 	return fmt.Sprintf("Coverage increased by `%.2f%%`. :medal_sports: Keep it up :medal_sports:", float64(head-base)/100)
 }
 
-func getModulePackageName() string {
+func moduleName() string {
 	f, err := os.ReadFile("go.mod")
 	if err != nil {
 		// unable to determine package name
 		return ""
 	}
 
-	// found it, stop searching
+	// opened file - locate `module` line to extract full package name
 	modRegex := regexp.MustCompile(`module +([^\s]+)`)
 	return string(modRegex.FindSubmatch(f)[1])
 }
 
-func getAllPackages(profiles ...*CoverProfile) []string {
+func allPackages(profiles ...*CoverProfile) []string {
 	set := map[string]struct{}{}
 	for _, profile := range profiles {
 		for name := range profile.Packages {
