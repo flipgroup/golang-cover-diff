@@ -34,38 +34,7 @@ func main() {
 		buildTable(moduleName(), base, head))
 }
 
-func buildTable(rootPkgName string, base, head *CoverProfile) string {
-	const tableRowSprintf = "%-80s  %7s  %7s  %7s\n"
-	rootPkgName += "/"
-
-	// write report header
-	var buf strings.Builder
-	buf.WriteString(fmt.Sprintf(tableRowSprintf, "package", "before", "after", "delta"))
-	buf.WriteString(fmt.Sprintf(tableRowSprintf, "-------", "-------", "-------", "-------"))
-
-	// write package lines
-	for _, pkgName := range allPackages(base, head) {
-		baseCov := base.Packages[pkgName].Coverage()
-		headCov := head.Packages[pkgName].Coverage()
-		buf.WriteString(fmt.Sprintf(tableRowSprintf,
-			relativePackage(rootPkgName, pkgName),
-			coverageDescription(baseCov),
-			coverageDescription(headCov),
-			diffDescription(baseCov, headCov, true)))
-	}
-
-	// write totals
-	buf.WriteString(fmt.Sprintf("%80s %8s %8s %8s",
-		"total:",
-		coverageDescription(base.Coverage()),
-		coverageDescription(head.Coverage()),
-		diffDescription(base.Coverage(), head.Coverage(), false),
-	))
-
-	return buf.String()
-}
-
-func createOrUpdateComment(ctx context.Context, title, details string) {
+func createOrUpdateComment(ctx context.Context, summary, reportTable string) {
 	const commentMarker = "<!-- info:golang-cover-diff -->"
 
 	auth_token := os.Getenv("GITHUB_TOKEN")
@@ -99,7 +68,7 @@ func createOrUpdateComment(ctx context.Context, title, details string) {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: auth_token},
 	)
-	tc := oauth2.NewClient(context.Background(), ts)
+	tc := oauth2.NewClient(ctx, ts)
 
 	client := github.NewClient(tc)
 	comments, _, err := client.Issues.ListComments(ctx, owner, repo, prNum, &github.IssueListCommentsOptions{})
@@ -108,11 +77,7 @@ func createOrUpdateComment(ctx context.Context, title, details string) {
 	}
 
 	// iterate over existing pull request comments - if existing coverage comment found then update
-	body := fmt.Sprintf("%s\n%s\n%s\n\n```\n%s\n```\n",
-		commentMarker,
-		"# Golang test coverage difference report",
-		title, details)
-
+	body := buildCommentBody(commentMarker, summary, reportTable)
 	for _, c := range comments {
 		if c.Body == nil {
 			continue
@@ -125,7 +90,7 @@ func createOrUpdateComment(ctx context.Context, title, details string) {
 
 		if strings.HasPrefix(*c.Body, commentMarker) {
 			// found existing coverage comment - update
-			_, _, err = client.Issues.EditComment(ctx, owner, repo, *c.ID, &github.IssueComment{
+			_, _, err := client.Issues.EditComment(ctx, owner, repo, *c.ID, &github.IssueComment{
 				Body: &body,
 			})
 			if err != nil {
@@ -142,6 +107,49 @@ func createOrUpdateComment(ctx context.Context, title, details string) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func buildCommentBody(commentMarker, summary, reportTable string) string {
+	return fmt.Sprintf(
+		("%s\n" +
+			"# Golang test coverage difference report\n" +
+			"%s\n\n" +
+			"<details>\n<summary>Package report</summary>\n\n" +
+			"```\n%s\n```\n" +
+			"</details>"),
+		commentMarker,
+		summary, reportTable)
+}
+
+func buildTable(rootPkgName string, base, head *CoverProfile) string {
+	const tableRowSprintf = "%-80s  %7s  %7s  %7s\n"
+	rootPkgName += "/"
+
+	// write report header
+	var buf strings.Builder
+	buf.WriteString(fmt.Sprintf(tableRowSprintf, "package", "before", "after", "delta"))
+	buf.WriteString(fmt.Sprintf(tableRowSprintf, "-------", "-------", "-------", "-------"))
+
+	// write package lines
+	for _, pkgName := range allPackages(base, head) {
+		baseCov := base.Packages[pkgName].Coverage()
+		headCov := head.Packages[pkgName].Coverage()
+		buf.WriteString(fmt.Sprintf(tableRowSprintf,
+			relativePackage(rootPkgName, pkgName),
+			coverageDescription(baseCov),
+			coverageDescription(headCov),
+			diffDescription(baseCov, headCov, true)))
+	}
+
+	// write totals
+	buf.WriteString(fmt.Sprintf("%80s %8s %8s %8s",
+		"total:",
+		coverageDescription(base.Coverage()),
+		coverageDescription(head.Coverage()),
+		diffDescription(base.Coverage(), head.Coverage(), false),
+	))
+
+	return buf.String()
 }
 
 func relativePackage(root, pkgName string) string {
