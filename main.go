@@ -65,7 +65,7 @@ func buildTable(rootPkgName string, base, head *CoverProfile) string {
 	return buf.String()
 }
 
-func createOrUpdateComment(ctx context.Context, title, details string) {
+func createOrUpdateComment(ctx context.Context, summary, details string) {
 	const commentMarker = "<!-- info:golang-cover-diff -->"
 
 	auth_token := os.Getenv("GITHUB_TOKEN")
@@ -111,7 +111,7 @@ func createOrUpdateComment(ctx context.Context, title, details string) {
 	body := fmt.Sprintf("%s\n%s\n%s\n\n```\n%s\n```\n",
 		commentMarker,
 		"# Golang test coverage difference report",
-		title, details)
+		summary, details)
 
 	for _, c := range comments {
 		if c.Body == nil {
