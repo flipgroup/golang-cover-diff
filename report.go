@@ -100,7 +100,7 @@ func parseCoverProfile(r io.Reader) (*CoverProfile, error) {
 			return nil, fmt.Errorf("malformed coverage line: %s", scanner.Text())
 		}
 
-		// note: format of each coverage line https://github.com/golang/tools/blob/0cf4e2708ac840da8674eb3947b660a931bd2c1f/cover/profile.go#L51-L54
+		// note: format of each coverage line https://github.com/golang/tools/blob/e8f417a962ed6ed4ce93226507cc6e6d007c386b/cover/profile.go#L55-L58
 		path := match[1]
 		pkgName := filepath.Dir(path)
 		fileName := filepath.Base(path)
