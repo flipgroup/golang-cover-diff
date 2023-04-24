@@ -99,7 +99,7 @@ func createOrUpdateComment(ctx context.Context, title, details string) {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: auth_token},
 	)
-	tc := oauth2.NewClient(context.Background(), ts)
+	tc := oauth2.NewClient(ctx, ts)
 
 	client := github.NewClient(tc)
 	comments, _, err := client.Issues.ListComments(ctx, owner, repo, prNum, &github.IssueListCommentsOptions{})
