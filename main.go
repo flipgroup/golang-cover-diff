@@ -34,37 +34,6 @@ func main() {
 		buildTable(moduleName(), base, head))
 }
 
-func buildTable(rootPkgName string, base, head *CoverProfile) string {
-	const tableRowSprintf = "%-80s  %7s  %7s  %7s\n"
-	rootPkgName += "/"
-
-	// write report header
-	var buf strings.Builder
-	buf.WriteString(fmt.Sprintf(tableRowSprintf, "package", "before", "after", "delta"))
-	buf.WriteString(fmt.Sprintf(tableRowSprintf, "-------", "-------", "-------", "-------"))
-
-	// write package lines
-	for _, pkgName := range allPackages(base, head) {
-		baseCov := base.Packages[pkgName].Coverage()
-		headCov := head.Packages[pkgName].Coverage()
-		buf.WriteString(fmt.Sprintf(tableRowSprintf,
-			relativePackage(rootPkgName, pkgName),
-			coverageDescription(baseCov),
-			coverageDescription(headCov),
-			diffDescription(baseCov, headCov, true)))
-	}
-
-	// write totals
-	buf.WriteString(fmt.Sprintf("%80s %8s %8s %8s",
-		"total:",
-		coverageDescription(base.Coverage()),
-		coverageDescription(head.Coverage()),
-		diffDescription(base.Coverage(), head.Coverage(), false),
-	))
-
-	return buf.String()
-}
-
 func createOrUpdateComment(ctx context.Context, summary, details string) {
 	const commentMarker = "<!-- info:golang-cover-diff -->"
 
@@ -125,7 +94,7 @@ func createOrUpdateComment(ctx context.Context, summary, details string) {
 
 		if strings.HasPrefix(*c.Body, commentMarker) {
 			// found existing coverage comment - update
-			_, _, err = client.Issues.EditComment(ctx, owner, repo, *c.ID, &github.IssueComment{
+			_, _, err := client.Issues.EditComment(ctx, owner, repo, *c.ID, &github.IssueComment{
 				Body: &body,
 			})
 			if err != nil {
@@ -142,6 +111,37 @@ func createOrUpdateComment(ctx context.Context, summary, details string) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func buildTable(rootPkgName string, base, head *CoverProfile) string {
+	const tableRowSprintf = "%-80s  %7s  %7s  %7s\n"
+	rootPkgName += "/"
+
+	// write report header
+	var buf strings.Builder
+	buf.WriteString(fmt.Sprintf(tableRowSprintf, "package", "before", "after", "delta"))
+	buf.WriteString(fmt.Sprintf(tableRowSprintf, "-------", "-------", "-------", "-------"))
+
+	// write package lines
+	for _, pkgName := range allPackages(base, head) {
+		baseCov := base.Packages[pkgName].Coverage()
+		headCov := head.Packages[pkgName].Coverage()
+		buf.WriteString(fmt.Sprintf(tableRowSprintf,
+			relativePackage(rootPkgName, pkgName),
+			coverageDescription(baseCov),
+			coverageDescription(headCov),
+			diffDescription(baseCov, headCov, true)))
+	}
+
+	// write totals
+	buf.WriteString(fmt.Sprintf("%80s %8s %8s %8s",
+		"total:",
+		coverageDescription(base.Coverage()),
+		coverageDescription(head.Coverage()),
+		diffDescription(base.Coverage(), head.Coverage(), false),
+	))
+
+	return buf.String()
 }
 
 func relativePackage(root, pkgName string) string {
