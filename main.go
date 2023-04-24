@@ -34,7 +34,7 @@ func main() {
 		buildTable(moduleName(), base, head))
 }
 
-func createOrUpdateComment(ctx context.Context, summary, details string) {
+func createOrUpdateComment(ctx context.Context, summary, reportTable string) {
 	const commentMarker = "<!-- info:golang-cover-diff -->"
 
 	auth_token := os.Getenv("GITHUB_TOKEN")
@@ -77,11 +77,7 @@ func createOrUpdateComment(ctx context.Context, summary, details string) {
 	}
 
 	// iterate over existing pull request comments - if existing coverage comment found then update
-	body := fmt.Sprintf("%s\n%s\n%s\n\n```\n%s\n```\n",
-		commentMarker,
-		"# Golang test coverage difference report",
-		summary, details)
-
+	body := buildCommentBody(commentMarker, summary, reportTable)
 	for _, c := range comments {
 		if c.Body == nil {
 			continue
@@ -111,6 +107,18 @@ func createOrUpdateComment(ctx context.Context, summary, details string) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func buildCommentBody(commentMarker, summary, reportTable string) string {
+	return fmt.Sprintf(
+		("%s\n" +
+			"# Golang test coverage difference report\n" +
+			"%s\n\n" +
+			"<details>\n<summary>Package report</summary>\n\n" +
+			"```\n%s\n```\n" +
+			"</details>"),
+		commentMarker,
+		summary, reportTable)
 }
 
 func buildTable(rootPkgName string, base, head *CoverProfile) string {
