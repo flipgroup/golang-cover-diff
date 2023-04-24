@@ -7,6 +7,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestBuildCommentBody(t *testing.T) {
+	assert.Equal(t,
+		"MARKER\n"+
+			"# Golang test coverage difference report\n"+
+			"Summary\n\n"+
+			"<details>\n<summary>Package report</summary>\n\n"+
+			"```\nReport table\n```\n"+
+			"</details>",
+		buildCommentBody("MARKER", "Summary", "Report table"))
+}
+
 func TestBuildTable(t *testing.T) {
 	t.Run("empty data set", func(t *testing.T) {
 		base := &CoverProfile{}
