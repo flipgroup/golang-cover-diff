@@ -7,26 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestModuleName(t *testing.T) {
-	assert.Equal(t, "github.com/flipgroup/golang-cover-diff", moduleName())
-}
-
-func TestRelativePackage(t *testing.T) {
-	const rootPkgName = "github.com/flipgroup/golang-cover-diff/"
-
-	assert.Equal(t,
-		"my/cool/package",
-		relativePackage(rootPkgName, "my/cool/package"))
-
-	assert.Equal(t,
-		"my/cool/package",
-		relativePackage(rootPkgName, "github.com/flipgroup/golang-cover-diff/my/cool/package"))
-
-	assert.Equal(t,
-		"my/cool/package/with/a/stupidly/log/package/path/name/keep/going/on/going/plus/s",
-		relativePackage(rootPkgName, "github.com/flipgroup/golang-cover-diff/my/cool/package/with/a/stupidly/log/package/path/name/keep/going/on/going/plus/some/more/oh/my/when/will/this/end"))
-}
-
 func TestBuildTable(t *testing.T) {
 	t.Run("empty data set", func(t *testing.T) {
 		base := &CoverProfile{}
@@ -107,4 +87,24 @@ my/package                                                                      
 `, "\n"), "$-$", "   "),
 			buildTable("github.com/flipgroup/golang-cover-diff", base, head))
 	})
+}
+
+func TestRelativePackage(t *testing.T) {
+	const rootPkgName = "github.com/flipgroup/golang-cover-diff/"
+
+	assert.Equal(t,
+		"my/cool/package",
+		relativePackage(rootPkgName, "my/cool/package"))
+
+	assert.Equal(t,
+		"my/cool/package",
+		relativePackage(rootPkgName, "github.com/flipgroup/golang-cover-diff/my/cool/package"))
+
+	assert.Equal(t,
+		"my/cool/package/with/a/stupidly/log/package/path/name/keep/going/on/going/plus/s",
+		relativePackage(rootPkgName, "github.com/flipgroup/golang-cover-diff/my/cool/package/with/a/stupidly/log/package/path/name/keep/going/on/going/plus/some/more/oh/my/when/will/this/end"))
+}
+
+func TestModuleName(t *testing.T) {
+	assert.Equal(t, "github.com/flipgroup/golang-cover-diff", moduleName())
 }
