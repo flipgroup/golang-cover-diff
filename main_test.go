@@ -10,7 +10,7 @@ import (
 func TestBuildCommentBody(t *testing.T) {
 	assert.Equal(t,
 		"MARKER\n"+
-			"# Golang test coverage difference report\n"+
+			"# Golang test coverage difference report\n\n"+
 			"Summary\n\n"+
 			"<details>\n<summary>Package report</summary>\n\n"+
 			"```\nReport table\n```\n"+
