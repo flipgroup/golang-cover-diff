@@ -187,7 +187,7 @@ func diffDescription(base, head int, emptyNoDiff bool) string {
 
 func summaryMessage(base, head int) string {
 	if base == head {
-		return "Coverage unchanged."
+		return "Coverage unchanged. :2nd_place_medal:"
 	}
 
 	if base > head {
