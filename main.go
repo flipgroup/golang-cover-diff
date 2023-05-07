@@ -112,7 +112,7 @@ func createOrUpdateComment(ctx context.Context, summary, reportTable string) {
 func buildCommentBody(commentMarker, summary, reportTable string) string {
 	return fmt.Sprintf(
 		("%s\n" +
-			"# Golang test coverage difference report\n" +
+			"# Golang test coverage difference report\n\n" +
 			"%s\n\n" +
 			"<details>\n<summary>Package report</summary>\n\n" +
 			"```\n%s\n```\n" +
@@ -187,7 +187,7 @@ func diffDescription(base, head int, emptyNoDiff bool) string {
 
 func summaryMessage(base, head int) string {
 	if base == head {
-		return "Coverage unchanged."
+		return "Coverage unchanged. :2nd_place_medal:"
 	}
 
 	if base > head {
