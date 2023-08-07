@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -80,11 +81,11 @@ func LoadCoverProfile(filename string) (*CoverProfile, error) {
 func parseCoverProfile(r io.Reader) (*CoverProfile, error) {
 	scanner := bufio.NewScanner(r)
 	if !scanner.Scan() {
-		return nil, fmt.Errorf("missing header")
+		return nil, errors.New("missing header")
 	}
 	header := scanner.Text()
 	if !strings.HasPrefix(header, "mode: ") {
-		return nil, fmt.Errorf("profile must start with [mode: ] header")
+		return nil, errors.New("profile must start with [mode: ] header")
 	}
 
 	profile := &CoverProfile{
