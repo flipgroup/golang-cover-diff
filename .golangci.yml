@@ -22,6 +22,7 @@ linters-settings:
   exhaustive:
     default-signifies-exhaustive: true
   goconst:
+    ignore-tests: true
     min-len: 2
     min-occurrences: 2
   gofmt:
@@ -33,5 +34,3 @@ linters-settings:
     disable:
       - fieldalignment
       - shadow
-  makezero:
-    always: false
