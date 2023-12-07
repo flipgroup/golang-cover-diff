@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 	"regexp"
@@ -14,24 +15,33 @@ import (
 )
 
 func main() {
+	outputText := flag.Bool("text", false, "Output report as text")
+	flag.Parse()
+
 	ctx := context.Background()
 
 	// load given base and head `go test` cover profiles from disk
-	base, err := LoadCoverProfile(os.Args[1])
+	base, err := LoadCoverProfile(flag.Arg(0))
 	if err != nil {
 		panic(err)
 	}
 
-	head, err := LoadCoverProfile(os.Args[2])
+	head, err := LoadCoverProfile(flag.Arg(1))
 	if err != nil {
 		panic(err)
 	}
 
 	// generate and publish GitHub pull request message
-	createOrUpdateComment(
-		ctx,
-		summaryMessage(base.Coverage(), head.Coverage()),
-		buildTable(moduleName(), base, head))
+	reportTable := buildTable(moduleName(), base, head)
+
+	if *outputText {
+		fmt.Println(reportTable)
+	} else {
+		createOrUpdateComment(
+			ctx,
+			summaryMessage(base.Coverage(), head.Coverage()),
+			reportTable)
+	}
 }
 
 func createOrUpdateComment(ctx context.Context, summary, reportTable string) {
