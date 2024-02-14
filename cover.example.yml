@@ -34,7 +34,7 @@ jobs:
         run: echo "value=${{ hashFiles('**/*.go','!vendor/**') }}" >>"$GITHUB_OUTPUT"
       - name: Cache base cover profile
         id: cache-base
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: cover-${{ steps.hash-base.outputs.value }}.profile
           key: golang-cover-profile-${{ steps.hash-base.outputs.value }}
@@ -61,7 +61,7 @@ jobs:
           github.event_name == 'pull_request' &&
           steps.hash-base.outputs.value != steps.hash-head.outputs.value
         id: cache-head
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: cover-${{ steps.hash-head.outputs.value }}.profile
           key: golang-cover-profile-${{ steps.hash-head.outputs.value }}
@@ -88,7 +88,7 @@ jobs:
           echo "sha1=$sha1" >>"$GITHUB_OUTPUT"
       - name: Cache golang-cover-diff
         id: cache-golang-cover-diff
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/go/bin/golang-cover-diff
           key: ${{ runner.os }}-golang-cover-diff-sha1-${{ steps.golang-cover-diff-main.outputs.sha1 }}
