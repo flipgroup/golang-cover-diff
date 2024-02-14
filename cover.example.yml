@@ -19,10 +19,10 @@ jobs:
 
       - name: Checkout source
         if: github.event_name != 'pull_request'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Checkout pull request base
         if: github.event_name == 'pull_request'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.base.ref }}
       - name: Setup Golang with cache
@@ -49,7 +49,7 @@ jobs:
 
       - name: Checkout source
         if: github.event_name == 'pull_request'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           clean: false
       - name: Generate Golang source hash head
