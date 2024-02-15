@@ -90,7 +90,7 @@ jobs:
         id: cache-golang-cover-diff
         uses: actions/cache@v4
         with:
-          key: ${{ runner.os }}-golang-cover-diff-sha1-${{ steps.golang-cover-diff-main.outputs.sha1 }}
+          key: golang-cover-diff-${{ runner.os }}-sha1-${{ steps.golang-cover-diff-main.outputs.sha1 }}
           path: ~/go/bin/golang-cover-diff
       - name: Install golang-cover-diff
         if: steps.cache-golang-cover-diff.outputs.cache-hit != 'true'
