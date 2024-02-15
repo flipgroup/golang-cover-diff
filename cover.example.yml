@@ -36,8 +36,8 @@ jobs:
         id: cache-base
         uses: actions/cache@v4
         with:
-          path: cover-${{ steps.hash-base.outputs.value }}.profile
           key: golang-cover-profile-${{ steps.hash-base.outputs.value }}
+          path: cover-${{ steps.hash-base.outputs.value }}.profile
       - name: Generate base cover profile
         if: steps.cache-base.outputs.cache-hit != 'true'
 
@@ -63,8 +63,8 @@ jobs:
         id: cache-head
         uses: actions/cache@v4
         with:
-          path: cover-${{ steps.hash-head.outputs.value }}.profile
           key: golang-cover-profile-${{ steps.hash-head.outputs.value }}
+          path: cover-${{ steps.hash-head.outputs.value }}.profile
       - name: Generate head cover profile
         if: |
           github.event_name == 'pull_request' &&
@@ -90,8 +90,8 @@ jobs:
         id: cache-golang-cover-diff
         uses: actions/cache@v4
         with:
-          path: ~/go/bin/golang-cover-diff
           key: ${{ runner.os }}-golang-cover-diff-sha1-${{ steps.golang-cover-diff-main.outputs.sha1 }}
+          path: ~/go/bin/golang-cover-diff
       - name: Install golang-cover-diff
         if: steps.cache-golang-cover-diff.outputs.cache-hit != 'true'
         run: go install github.com/flipgroup/golang-cover-diff@main
