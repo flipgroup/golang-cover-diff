@@ -5,9 +5,15 @@ concurrency:
 
 on:
   pull_request:
+    paths:
+      - '**.go'
+      - '!vendor/**'
   push:
     branches:
       - main
+    paths:
+      - '**.go'
+      - '!vendor/**'
 
 jobs:
   main:
