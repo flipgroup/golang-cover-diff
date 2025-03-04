@@ -1,6 +1,6 @@
 module github.com/flipgroup/golang-cover-diff
 
-go 1.22
+go 1.24
 
 require (
 	github.com/google/go-github/v45 v45.2.0
