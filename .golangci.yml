@@ -1,15 +1,23 @@
-run:
-  timeout: 5m
+version: '2'
+
+formatters:
+  enable:
+    - gci
+    - gofmt
+
+  settings:
+    gofmt:
+      rewrite-rules:
+        - pattern: interface{}
+          replacement: any
 
 linters:
   enable:
     - dupword
     - errname
     - exhaustive
-    - gci
     - goconst
     - godot
-    - gofmt
     - makezero
     - nolintlint
     - perfsprint
@@ -17,26 +25,46 @@ linters:
     - unparam
     - whitespace
 
-linters-settings:
-  errcheck:
-    exclude-functions:
-      - (net/http.ResponseWriter).Write
-  exhaustive:
-    default-signifies-exhaustive: true
-  goconst:
-    ignore-tests: true
-    min-len: 2
-    min-occurrences: 2
-  gofmt:
-    rewrite-rules:
-      - pattern: interface{}
-        replacement: any
-  govet:
-    enable-all: true
-    disable:
-      - fieldalignment
-      - shadow
-  nolintlint:
-    require-specific: true
-  perfsprint:
-    strconcat: false
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters:
+          - goconst
+
+  settings:
+    errcheck:
+      exclude-functions:
+        - (*os.File).Close
+        - (io.Closer).Close
+        - (net/http.ResponseWriter).Write
+    exhaustive:
+      default-signifies-exhaustive: true
+    goconst:
+      min-len: 2
+      min-occurrences: 2
+    govet:
+      enable-all: true
+      disable:
+        - fieldalignment
+        - shadow
+    nolintlint:
+      require-specific: true
+    perfsprint:
+      strconcat: false
+    staticcheck:
+      checks:
+        # defaults
+        - all
+        - -ST1000
+        - -ST1003
+        - -ST1016
+        - -ST1020
+        - -ST1021
+        - -ST1022
+
+        # additions
+        - -QF1003
+        - -QF1006
+        - -QF1008
+        - -QF1012
+        - -ST1005
