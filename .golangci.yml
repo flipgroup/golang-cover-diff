@@ -16,6 +16,7 @@ linters:
     - dupword
     - errname
     - exhaustive
+    - gochecknoinits
     - goconst
     - godot
     - makezero
