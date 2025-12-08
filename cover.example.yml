@@ -89,7 +89,7 @@ jobs:
           sha1=$(curl \
             --header "Accept: application/vnd.github+json" \
             --silent \
-              https://api.github.com/repos/flipgroup/golang-cover-diff/branches/main | \
+              https://api.github.com/repos/flipgroup/golang-cover-diff/branches/main |
                 jq --raw-output ".commit.sha")
           echo "sha1=$sha1" >>"$GITHUB_OUTPUT"
       - name: Cache golang-cover-diff
