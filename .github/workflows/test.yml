@@ -1,4 +1,7 @@
 name: Test
+concurrency:
+  cancel-in-progress: true
+  group: test-${{ github.ref }}
 
 on:
   pull_request:
@@ -17,6 +20,6 @@ jobs:
         uses: flipgroup/action-golang-with-lint@main
         with:
           version-golang-file: go.mod
-          version-golangci-lint: v2.6.2
+          version-golangci-lint: v2.11.4
       - name: Test
         run: go test -count=1 -v ./...

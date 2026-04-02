@@ -5,15 +5,8 @@ formatters:
     - gci
     - gofmt
 
-  settings:
-    gofmt:
-      rewrite-rules:
-        - pattern: interface{}
-          replacement: any
-
 linters:
   enable:
-    - copyloopvar
     - dupword
     - errname
     - exhaustive
@@ -21,6 +14,7 @@ linters:
     - goconst
     - godot
     - makezero
+    - modernize
     - nolintlint
     - perfsprint
     - unconvert
