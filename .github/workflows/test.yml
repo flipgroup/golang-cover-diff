@@ -20,6 +20,6 @@ jobs:
         uses: flipgroup/action-golang-with-lint@main
         with:
           version-golang-file: go.mod
-          version-golangci-lint: v2.11.4
+          version-golangci-lint: v2.14.0
       - name: Test
         run: go test -count=1 -v ./...
